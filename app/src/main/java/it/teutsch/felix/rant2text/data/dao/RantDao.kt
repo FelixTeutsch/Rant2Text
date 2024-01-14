@@ -1,12 +1,14 @@
-package it.teutsch.felix.text2rant.data.dao
+package it.teutsch.felix.rant2text.data.dao
 
+import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import it.teutsch.felix.text2rant.data.model.RantTableModel
+import it.teutsch.felix.rant2text.data.model.RantTableModel
 import kotlinx.coroutines.flow.Flow
 
+@Dao
 interface RantDao {
     @Insert
     suspend fun insertRant(rant: RantTableModel)

@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Text2Rant"
+rootProject.name = "rant2text"
 include(":app")
  

@@ -1,8 +1,9 @@
-package it.teutsch.felix.text2rant.ui.enumeration
+package it.teutsch.felix.rant2text.ui.enumeration
 
 import androidx.compose.ui.graphics.Color
 
 enum class EAngerLevel(val angerLevel: Int, val angerColor: Color, val angerName: String) {
+    None(-1, Color(0xFF000000), "None"),
     Low(0, Color(0xFF44CE1B), "Low"),
     MediumLow(1, Color(0xFFBBDB44), "MediumLow"),
     Medium(2, Color(0xFFF7E379), "Medium"),

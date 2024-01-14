@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "it.teutsch.felix.text2rant"
-    compileSdk = 33
+    namespace = "it.teutsch.felix.rant2text"
+    compileSdk = 34
 
     defaultConfig {
-        applicationId = "it.teutsch.felix.text2rant"
+        applicationId = "it.teutsch.felix.rant2text"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -31,11 +31,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -69,9 +69,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
 
-
     // Material components and navigation
-    implementation ("androidx.compose.material:material:1.4.2")
+    implementation("androidx.compose.material:material:1.4.2")
     implementation("androidx.navigation:navigation-compose:2.7.4")
 
     // Material icons

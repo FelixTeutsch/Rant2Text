@@ -1,5 +1,6 @@
 package it.teutsch.felix.rant2text
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -40,7 +41,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RantListView(rantViewModel)
+                    RantListView(rantViewModel) {
+                        val intent = Intent(this, RantActivity::class.java).apply {
+                            putExtra("rantId", it)
+                        }
+                        startActivity(intent)
+                    }
                 }
             }
         }

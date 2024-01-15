@@ -11,6 +11,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import it.teutsch.felix.rant2text.ui.model.RantViewModel
 
 // TODO: rework this function (itemName is hard to get from where it is activated)
 @Composable
@@ -142,4 +144,12 @@ fun modalButtons(
             )
         }
     }
+}
+
+@Composable
+fun createRant(rantViewModel: RantViewModel, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    val state = rantViewModel.rantViewState.collectAsState()
+
+    // if(state.value.dialog.equals(EDialog.CREATE_RANT) || state.value.dialog.equals(EDialog.EDIT_RANT))
+
 }

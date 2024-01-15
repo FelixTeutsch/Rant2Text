@@ -10,11 +10,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,7 +31,7 @@ import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 
 @Composable
-fun RantListView(rantViewModel: RantViewModel) {
+fun RantListView(rantViewModel: RantViewModel, createNewRant: (id: Int) -> Unit) {
     val state = rantViewModel.rantViewState.collectAsState()
 
     // Load Rants from Database
@@ -48,7 +53,7 @@ fun RantListView(rantViewModel: RantViewModel) {
         },
         floatingActionButton = {
             RantFab(
-                onClick = { rantViewModel.editRant() }
+                onClick = { createNewRant }
             )
         },
         backgroundColor = MaterialTheme.colorScheme.background
@@ -105,7 +110,11 @@ fun RantEmptyView(innerPadding: PaddingValues, clickCreate: () -> Unit) {
                     onClick = {
                         clickCreate
                     },
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
                 ) {
                     Text(text = "Start Ranting")
                 }
@@ -120,8 +129,10 @@ fun RantList(rantViewModel: RantViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-fun RantFab(onClick: () -> Unit) {
-    // TODO("Not yet implemented")
+fun RantFab(onClick: (id: Int) -> Unit) {
+    FloatingActionButton(onClick = { onClick(100) }) {
+        Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Rant")
+    }
 }
 
 @Composable

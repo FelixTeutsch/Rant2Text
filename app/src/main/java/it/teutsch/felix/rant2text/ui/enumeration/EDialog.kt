@@ -4,4 +4,5 @@ enum class EDialog {
     NONE,
     CREATE_RANT,
     EDIT_RANT,
+    DELETE_RANT,
 }

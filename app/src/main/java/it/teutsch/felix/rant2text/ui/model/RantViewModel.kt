@@ -39,11 +39,13 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
-    fun saveRant(rant: RantTableModel) {
+    fun saveRant(rant: RantTableModel): Int {
         dismissDialog()
+        var newRantId = 0L
         viewModelScope.launch {
-            dao.insertRant(rant)
+            newRantId = dao.insertRant(rant)
         }
+        return newRantId.toInt()
     }
 
     fun updateRant(rant: RantTableModel) {
@@ -58,6 +60,15 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
             it.copy(
                 targetRant = RantTableModel(),
                 dialog = EDialog.NONE
+            )
+        }
+    }
+
+    fun clickDeleteRant(rant: RantTableModel) {
+        _rantViewState.update {
+            it.copy(
+                targetRant = rant,
+                dialog = EDialog.DELETE_RANT
             )
         }
     }

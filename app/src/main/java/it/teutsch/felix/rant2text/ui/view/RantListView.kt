@@ -31,7 +31,7 @@ import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 
 @Composable
-fun RantListView(rantViewModel: RantViewModel, createNewRant: (id: Int) -> Unit) {
+fun RantListView(rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) {
     val state = rantViewModel.rantViewState.collectAsState()
 
     // Load Rants from Database
@@ -53,11 +53,15 @@ fun RantListView(rantViewModel: RantViewModel, createNewRant: (id: Int) -> Unit)
         },
         floatingActionButton = {
             RantFab(
-                onClick = { createNewRant }
+                onClick = rantViewModel.editRant()
             )
         },
         backgroundColor = MaterialTheme.colorScheme.background
     )
+
+    // Create & Delete Modals
+    CreateRantModal(rantViewModel = rantViewModel, openRantChat)
+    DeleteRantModal(rantViewModel = rantViewModel)
 }
 
 @Composable
@@ -66,7 +70,7 @@ fun RantEmptyView(innerPadding: PaddingValues, clickCreate: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp),
+            .padding(innerPadding),
         contentAlignment = Alignment.Center
 
     ) {
@@ -108,7 +112,7 @@ fun RantEmptyView(innerPadding: PaddingValues, clickCreate: () -> Unit) {
                 )
                 Button(
                     onClick = {
-                        clickCreate
+                        clickCreate()
                     },
                     modifier = Modifier.padding(16.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -129,8 +133,8 @@ fun RantList(rantViewModel: RantViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-fun RantFab(onClick: (id: Int) -> Unit) {
-    FloatingActionButton(onClick = { onClick(100) }) {
+fun RantFab(onClick: Unit) {
+    FloatingActionButton(onClick = { onClick }) {
         Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Rant")
     }
 }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RantDao {
     @Insert
-    suspend fun insertRant(rant: RantTableModel)
+    suspend fun insertRant(rant: RantTableModel): Long
 
     @Update
     suspend fun updateRant(rant: RantTableModel)

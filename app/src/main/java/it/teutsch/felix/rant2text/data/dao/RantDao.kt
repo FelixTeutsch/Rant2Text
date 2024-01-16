@@ -21,4 +21,8 @@ interface RantDao {
 
     @Query("SELECT * FROM rants")
     fun getRants(): Flow<List<RantTableModel>>
+
+
+    @Query("SELECT * FROM rants WHERE id=(:rantId)")
+    fun getRantById(rantId: Int): Flow<RantTableModel>
 }

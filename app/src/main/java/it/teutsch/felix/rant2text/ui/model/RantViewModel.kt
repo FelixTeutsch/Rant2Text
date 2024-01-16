@@ -30,11 +30,17 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
-    fun editRant(rant: RantTableModel? = null) {
+    /**
+     * Create & Edit Modals
+     * if rant is null, create a new one
+     * else edit the given rant
+     * @param rant: RantTableModel? = null
+     */
+    fun openEditModal(rant: RantTableModel? = null) {
         _rantViewState.update {
             it.copy(
                 targetRant = rant ?: RantTableModel(),
-                dialog = EDialog.EDIT_RANT
+                dialog = if (rant == null) EDialog.CREATE_RANT else EDialog.EDIT_RANT
             )
         }
     }

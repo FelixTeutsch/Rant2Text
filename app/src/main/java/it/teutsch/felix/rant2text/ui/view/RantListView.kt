@@ -47,14 +47,12 @@ fun RantListView(rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) 
         content = { innerPadding ->
 
             if (state.value.rants.isEmpty())
-                RantEmptyView(innerPadding) { rantViewModel.editRant() }
+                RantEmptyView(innerPadding) { rantViewModel.openEditModal() }
             else
                 RantList(rantViewModel, innerPadding)
         },
         floatingActionButton = {
-            RantFab(
-                onClick = rantViewModel.editRant()
-            )
+            RantFab { rantViewModel.openEditModal() }
         },
         backgroundColor = MaterialTheme.colorScheme.background
     )
@@ -133,9 +131,13 @@ fun RantList(rantViewModel: RantViewModel, innerPadding: PaddingValues) {
 }
 
 @Composable
-fun RantFab(onClick: Unit) {
-    FloatingActionButton(onClick = { onClick }) {
-        Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Rant")
+fun RantFab(onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = { onClick() },
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Icon(Icons.Rounded.Add, "Add Rant")
     }
 }
 

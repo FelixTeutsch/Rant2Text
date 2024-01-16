@@ -6,22 +6,26 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Slider
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
@@ -105,6 +109,7 @@ fun DeleteRantModal(
                     modalButtons(
                         confirmLabel = "Delete",
                         confirmColor = MaterialTheme.colorScheme.error,
+                        onConfirmColor = MaterialTheme.colorScheme.onError,
                         cancelLabel = "Cancel",
                         onConfirm = { rantViewModel.deleteRant(state.value.targetRant) },
                         onCancel = { rantViewModel.dismissDialog() }
@@ -119,6 +124,7 @@ fun DeleteRantModal(
 fun modalButtons(
     confirmLabel: String,
     confirmColor: Color,
+    onConfirmColor: Color,
     cancelLabel: String,
     onConfirm: () -> Unit,
     onCancel: () -> Unit
@@ -130,10 +136,16 @@ fun modalButtons(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         TextButton(onClick = { onCancel() }) {
-            Text(text = cancelLabel)
+            Text(text = cancelLabel, color = MaterialTheme.colorScheme.onSurface)
         }
-        TextButton(onClick = { onConfirm() }) {
-            Text(text = confirmLabel, color = confirmColor)
+        Button(
+            onClick = { onConfirm() },
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = confirmColor,
+                contentColor = onConfirmColor
+            )
+        ) {
+            Text(text = confirmLabel)
         }
     }
 }
@@ -153,88 +165,127 @@ fun CreateRantModal(
 
         // Composable content for your modal
         Dialog(
-            onDismissRequest = { rantViewModel.dismissDialog() }
+            onDismissRequest = { rantViewModel.dismissDialog() },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            ),
         ) {
-            Column(
-                modifier = Modifier
-                    .background(Color.White)
-                    .padding(16.dp)
-            ) {
-                // Title
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Rant Title Text Input
-                var rantTitle by rememberSaveable { mutableStateOf(rant.title) }
-                TextField(
-                    value = rantTitle,
-                    onValueChange = { rantTitle = it },
-                    label = { Text("Rant Title") },
+            Card {
+                Column(
                     modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp)
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                )
-
-                // Slider for Rant Level
-                var rantLevel by rememberSaveable { mutableStateOf(rant.angerLevel.angerLevel.toFloat()) }
-                Slider(
-                    value = rantLevel,
-                    onValueChange = { rantLevel = it },
-                    valueRange = 0f..5f,
-                    steps = 5,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                )
-
-                // Delete button in case of Edit mode
-                if (isEditMode) {
-                    IconButton(
-                        onClick = { rantViewModel.clickDeleteRant(rant) },
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // Title
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        // Delete button in case of Edit mode
+                        if (isEditMode) {
+                            IconButton(
+                                onClick = { rantViewModel.clickDeleteRant(rant) },
+                                modifier = Modifier
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = "Delete Rant",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                    // Rant Title Text Input
+                    var rantTitle by rememberSaveable { mutableStateOf(rant.title) }
+                    TextField(
+                        value = rantTitle,
+                        onValueChange = { rantTitle = it },
+                        label = { Text("Rant Title") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                            cursorColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+
+                    // Slider for Rant Level
+                    var rantLevel by rememberSaveable { mutableStateOf(rant.angerLevel) }
+                    var rantValue by rememberSaveable { mutableStateOf(rant.angerLevel.angerLevel.toFloat()) }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        //horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Delete,
-                            contentDescription = "Delete Rant",
-                            tint = MaterialTheme.colorScheme.error
+                        Slider(
+                            value = rantValue,
+                            onValueChange = {
+                                rantLevel = EAngerLevel.fromInt(it.toInt())
+                                rantValue = it
+                            },
+                            valueRange = 0f..5f,
+                            steps = 4,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                        )
+
+                        Text(
+                            text = rantLevel.angerName,
+                            modifier = Modifier.padding(start = 16.dp),
+                            color = rantLevel.angerColor
                         )
                     }
-                }
 
-                // Buttons (Cancel and Confirm)
-                modalButtons(
-                    confirmLabel = "Confirm",
-                    confirmColor = Color.Green,
-                    cancelLabel = "Cancel",
-                    onConfirm = {
-                        rantViewModel.dismissDialog()
-                        if (isEditMode) {
-                            rantViewModel.updateRant(
-                                RantTableModel(
-                                    title = rantTitle,
-                                    text = rant.text,
-                                    angerLevel = EAngerLevel.fromInt(rantLevel.toInt()),
-                                    id = rant.id
+                    // Buttons (Cancel and Confirm)
+                    modalButtons(
+                        confirmLabel = "Confirm",
+                        confirmColor = MaterialTheme.colorScheme.primaryContainer,
+                        onConfirmColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        cancelLabel = "Cancel",
+                        onConfirm = {
+                            rantViewModel.dismissDialog()
+                            if (isEditMode) {
+                                rantViewModel.updateRant(
+                                    RantTableModel(
+                                        title = rantTitle,
+                                        text = rant.text,
+                                        angerLevel = EAngerLevel.fromInt(rantLevel.angerLevel),
+                                        id = rant.id
+                                    )
                                 )
-                            )
-                        } else {
-                            var newRantId = rantViewModel.saveRant(
-                                RantTableModel(
-                                    title = rantTitle,
-                                    text = rant.text,
-                                    angerLevel = EAngerLevel.fromInt(rantLevel.toInt())
+                            } else {
+                                var newRantId = rantViewModel.saveRant(
+                                    RantTableModel(
+                                        title = rantTitle,
+                                        text = rant.text,
+                                        angerLevel = rantLevel
+                                    )
                                 )
-                            )
-                            openRantChat(newRantId)
-                        }
-                    },
-                    onCancel = { rantViewModel.dismissDialog() }
-                )
+                                openRantChat(newRantId)
+                            }
+                        },
+                        onCancel = { rantViewModel.dismissDialog() }
+                    )
+                }
             }
         }
     }

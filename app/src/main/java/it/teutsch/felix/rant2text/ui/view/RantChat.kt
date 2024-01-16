@@ -48,7 +48,12 @@ fun RantChatView(rantChatModel: RantChatModel, rantId: Int) {
 //
 //    rantChatModel.insertRant(ranty)
 
-    rantChatModel.getRantById(rantId)
+    try {
+        rantChatModel.getRantById(rantId)
+    } catch (e: Exception) {
+        Log.d("err", "err is $e")
+
+    }
 
 
     Log.d("dbwork", "state is ${state.value.title}")

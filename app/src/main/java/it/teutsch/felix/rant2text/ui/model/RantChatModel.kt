@@ -17,8 +17,13 @@ class RantChatModel(private val dao: RantDao) : ViewModel() {
     fun getRantById(rantId: Int) {
         viewModelScope.launch {
             dao.getRantById(rantId).collect { rant ->
-                Log.d("database", "the rant isv ${rant.title}")
-                _rantChatState.update { it.copy(title = rant.title, text = rant.text) }
+                Log.d("personalErr", "there is an err with the rant: $rant")
+//                Log.d("database", "the rant isv ${rant.title}")
+                if (rant != null) {
+                    _rantChatState.update { it.copy(title = rant.title, text = rant.text) }
+                } else {
+                    _rantChatState.update { it.copy(title = "Generic", text = "Generic text") }
+                }
             }
         }
     }

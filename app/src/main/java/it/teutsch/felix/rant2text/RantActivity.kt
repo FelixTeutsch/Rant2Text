@@ -42,7 +42,10 @@ class RantActivity : ComponentActivity() {
                 ) {
                     val rantId = intent.getIntExtra("rantId", 1)
 //                    Text(text = "RantActivity $rantId")
-                    RantChatView(rantChatModel, rantId)
+                    RantChatView(rantChatModel, rantId) {
+                        db.close()
+                        finish()
+                    }
                 }
             }
         }

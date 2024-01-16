@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -265,7 +266,11 @@ fun CreateRantModal(
                                 steps = EAngerLevel.values().size - 2,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(bottom = 16.dp)
+                                    .padding(bottom = 16.dp),
+                                colors = SliderDefaults.colors(
+                                    thumbColor = rantLevel.angerColor,
+                                    activeTrackColor = rantLevel.angerColor,
+                                )
                             )
 
                             Text(

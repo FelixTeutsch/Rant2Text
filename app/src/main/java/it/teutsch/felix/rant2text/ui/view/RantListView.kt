@@ -187,10 +187,6 @@ fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (
     )
 
     ElevatedCard(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp,
@@ -251,15 +247,16 @@ fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
                         .clickable {
                             openRantChat(rant.id)
-                        },
+                        }
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(
                         alignment = Alignment.Start,
                         space = 16.dp
-                    )
+                    ),
                 )
                 {
                     // Colored Circle based on Anger Level

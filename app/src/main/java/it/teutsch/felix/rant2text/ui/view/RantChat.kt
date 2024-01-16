@@ -27,17 +27,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
 
 @Composable
-fun RantChatView(rantChatModel: RantChatModel, rantId: Int) {
+fun RantChatView(rantChatModel: RantChatModel, rantId: Int, closeChatIntent: () -> Unit) {
     val state = rantChatModel.rantChatState.collectAsState()
 //
 //    val ranty: RantTableModel = RantTableModel(
@@ -56,7 +62,7 @@ fun RantChatView(rantChatModel: RantChatModel, rantId: Int) {
     }
 
 
-    Log.d("dbwork", "state is ${state.value.title}")
+    Log.d("dbwork", "state is ${state.value.rant.title}")
 
     Column(
         modifier = Modifier
@@ -65,12 +71,13 @@ fun RantChatView(rantChatModel: RantChatModel, rantId: Int) {
         horizontalAlignment = Alignment.End
     ) {
         topBarSection(
-            title = state.value.title
+            title = state.value.rant.title,
+            closeChatIntent
         )
 //        chatSection(state.value.text)
 //        messageOptions()
-        chatSection(messageText = state.value.text, modifier = Modifier.weight(0.9f))
-        messageOptions(modifier = Modifier.weight(0.1f))
+        chatSection(messageText = state.value.rant.text, modifier = Modifier.weight(0.9f))
+        messageOptions(modifier = Modifier.weight(0.1f), state.value.rant, rantChatModel)
 
     }
 }
@@ -138,8 +145,14 @@ fun messageItem(messageText: String?) {
 }
 
 @Composable
-fun messageOptions(modifier: Modifier) {
+fun messageOptions(modifier: Modifier, rant: RantTableModel, rantChatModel: RantChatModel) {
     val context = LocalContext.current
+    var typedMsg by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue("")
+        )
+    }
+
 
 
     Card(
@@ -153,15 +166,20 @@ fun messageOptions(modifier: Modifier) {
     ) {
         OutlinedTextField(
             placeholder = { Text(text = "Over write message") },
-            value = "omak",
-            onValueChange = {
+            value = typedMsg,
+            onValueChange = { newText ->
+                typedMsg = newText
             },
             shape = RoundedCornerShape(25.dp),
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.Send,
                     contentDescription = "",
-                    modifier = Modifier.clickable {/*TODO: CHANGE STATE AND EVENTUALLY DB*/ }
+                    modifier = Modifier.clickable {
+//                        Log.d("personal", "rant is: $rant")
+                        rant.text = typedMsg.text
+                        rantChatModel.saveRantMsg(rant)
+                    }
                 )
             },
             modifier = Modifier
@@ -177,7 +195,7 @@ fun messageOptions(modifier: Modifier) {
 }
 
 @Composable
-fun topBarSection(title: String) {
+fun topBarSection(title: String, closeChatIntent: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -194,7 +212,7 @@ fun topBarSection(title: String) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = {/* TODO: send back to main intent*/ },
+                onClick = { closeChatIntent() },
                 modifier = Modifier
                     .size(60.dp)
 

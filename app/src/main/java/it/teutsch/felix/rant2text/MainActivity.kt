@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     RantListView(rantViewModel) {
-                        db.close()
+//                        db.close()
                         val intent = Intent(this, RantActivity::class.java).apply {
                             putExtra("rantId", it)
                         }

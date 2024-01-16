@@ -6,8 +6,9 @@ import it.teutsch.felix.rant2text.ui.enumeration.EAngerLevel
 
 @Entity(tableName = "rants")
 data class RantTableModel(
-    val title: String = "",
-    val text: String = "",
+    //TODO: turn em back to vals after the chat page is settled
+    var title: String = "",
+    var text: String = "",
     val angerLevel: EAngerLevel = EAngerLevel.None,
     val date: Long = System.currentTimeMillis(),
     @PrimaryKey(autoGenerate = true)

@@ -6,10 +6,12 @@ import it.teutsch.felix.rant2text.data.dao.RantDao
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.enumeration.EDialog
 import it.teutsch.felix.rant2text.ui.state.RantViewState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RantViewModel(private val dao: RantDao) : ViewModel() {
     private val _rantViewState = MutableStateFlow(RantViewState())
@@ -45,13 +47,13 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
-    fun saveRant(rant: RantTableModel): Int {
-        dismissDialog()
-        var newRantId = 0L
-        viewModelScope.launch {
+    suspend fun saveRant(rant: RantTableModel): Int {
+        return withContext(Dispatchers.IO) {
+            dismissDialog()
+            var newRantId = 0L
             newRantId = dao.insertRant(rant)
+            return@withContext newRantId.toInt()
         }
-        return newRantId.toInt()
     }
 
     fun updateRant(rant: RantTableModel) {

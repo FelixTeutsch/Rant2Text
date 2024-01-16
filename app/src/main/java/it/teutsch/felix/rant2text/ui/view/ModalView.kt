@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +42,7 @@ import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.enumeration.EAngerLevel
 import it.teutsch.felix.rant2text.ui.enumeration.EDialog
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
+import kotlinx.coroutines.launch
 
 // TODO: rework this function (itemName is hard to get from where it is activated)
 @Composable
@@ -163,6 +165,7 @@ fun CreateRantModal(
     openRantChat: (Int) -> Unit
 ) {
     val state = rantViewModel.rantViewState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     if (state.value.dialog == EDialog.CREATE_RANT || state.value.dialog == EDialog.EDIT_RANT) {
         val isEditMode = state.value.dialog == EDialog.EDIT_RANT
@@ -290,14 +293,16 @@ fun CreateRantModal(
                                         )
                                     )
                                 } else {
-                                    val newRantId = rantViewModel.saveRant(
-                                        RantTableModel(
-                                            title = rantTitle,
-                                            text = rant.text,
-                                            angerLevel = rantLevel
+                                    coroutineScope.launch {
+                                        val newRantId = rantViewModel.saveRant(
+                                            RantTableModel(
+                                                title = rantTitle,
+                                                text = rant.text,
+                                                angerLevel = rantLevel
+                                            )
                                         )
-                                    )
-                                    openRantChat(newRantId)
+                                        openRantChat(newRantId)
+                                    }
                                 }
                             },
                             onCancel = { rantViewModel.dismissDialog() }

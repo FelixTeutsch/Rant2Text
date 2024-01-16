@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">rant2text</string>
-    <string name="title_activity_rant_view">RantView</string>
-    <string name="title_activity_rant">RantActivity</string>
+    <string name="app_name">Rant2Text</string>
+    <string name="title_activity_rant_view">Rant Overview</string>
+    <string name="title_activity_rant">Rant Chat</string>
 </resources>

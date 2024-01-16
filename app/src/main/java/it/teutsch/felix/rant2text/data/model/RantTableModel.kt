@@ -9,6 +9,7 @@ data class RantTableModel(
     val title: String = "",
     val text: String = "",
     val angerLevel: EAngerLevel = EAngerLevel.None,
+    val date: Long = System.currentTimeMillis(),
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 )

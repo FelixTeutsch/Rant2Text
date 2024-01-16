@@ -62,4 +62,11 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
+    fun getRantById(rantId: Int) {
+        viewModelScope.launch {
+            dao.getRantById(rantId = rantId)
+        }
+
+    }
+
 }

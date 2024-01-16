@@ -24,6 +24,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="it.teutsch.felix.RantChatHistory"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

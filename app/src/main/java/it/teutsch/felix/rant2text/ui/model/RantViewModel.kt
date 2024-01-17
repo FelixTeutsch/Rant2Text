@@ -87,4 +87,10 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
 
     }
+
+    fun updateSearchText(searchText: String) {
+        _rantViewState.update {
+            it.copy(searchText = searchText)
+        }
+    }
 }

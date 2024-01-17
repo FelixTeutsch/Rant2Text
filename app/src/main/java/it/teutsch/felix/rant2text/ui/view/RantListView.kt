@@ -35,7 +35,6 @@ import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -54,6 +53,7 @@ import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun RantListView(rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) {
@@ -165,63 +165,74 @@ fun RantList(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
             .padding(innerPadding)
-            .padding(
-                bottom = 16.dp,
-                end = 4.dp,
-                top = 16.dp,
-                start = 4.dp
-            ),
-        verticalArrangement = Arrangement.spacedBy(
-            alignment = Alignment.Top,
-            space = 4.dp,
-        ),
+            .padding(16.dp, 4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        groupedRants.forEach { (day, rants) ->
+        groupedRants.entries.sortedByDescending { it.key }.forEach { (day, rants) ->
             // Display day above each group
             Text(
-                text = formatRantDay(day), // Adjust this function based on your date formatting needs
+                text = formatRantDay(day),
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        24.dp,
-                        24.dp,
-                        8.dp,
-                        4.dp,
-                    ),
+                    .padding(24.dp, 8.dp, 4.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             // Display rant cards for each group
-            rants.forEach { rant ->
+            rants.sortedByDescending { it.date }.forEach { rant ->
                 RantCard(rant, rantViewModel, openRantChat)
             }
         }
     }
 }
 
-private fun extractDay(dateMillis: Long): Long {
-    // Remove hours, minutes, seconds, and milliseconds from the date
-    val calendar = Calendar.getInstance().apply {
+private fun extractDay(dateMillis: Long): Long =
+    Calendar.getInstance().apply {
         timeInMillis = dateMillis
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
-    }
-    return calendar.timeInMillis
-}
+    }.timeInMillis
 
 @SuppressLint("SimpleDateFormat")
 private fun formatRantDay(dayMillis: Long): String {
-    val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-    return dateFormat.format(dayMillis)
+    val currentDate = Calendar.getInstance()
+    val givenDate = Calendar.getInstance().apply { timeInMillis = dayMillis }
+
+    return when {
+        isSameDay(currentDate, givenDate) -> "Today"
+        isYesterday(currentDate, givenDate) -> "Yesterday"
+        isSameWeek(currentDate, givenDate) -> SimpleDateFormat("EEEE", Locale.getDefault()).format(
+            dayMillis
+        )
+
+        else -> SimpleDateFormat("dd. MMM", Locale.getDefault()).format(dayMillis)
+    }
+}
+
+private fun isSameDay(today: Calendar, checkDate: Calendar): Boolean =
+    today.get(Calendar.YEAR) == checkDate.get(Calendar.YEAR) &&
+            today.get(Calendar.DAY_OF_YEAR) == checkDate.get(Calendar.DAY_OF_YEAR)
+
+private fun isYesterday(today: Calendar, checkDate: Calendar): Boolean {
+    today.add(Calendar.DAY_OF_YEAR, -1)
+    return isSameDay(today, checkDate)
+}
+
+private fun isSameWeek(today: Calendar, checkDate: Calendar): Boolean {
+    val daysInWeek = 7
+    val diffInMillis = today.timeInMillis - checkDate.timeInMillis
+    val daysDiff = TimeUnit.MILLISECONDS.toDays(diffInMillis).toInt()
+
+    return daysDiff in 0..daysInWeek
 }
 
 
 @OptIn(
-    ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class
 )
 @Composable
@@ -337,7 +348,7 @@ fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
-                            text = if (rant.text != null && rant.text.isNotEmpty()) rant.text else "You have not ranted yet... Start ranting now!",
+                            text = rant.text.ifEmpty { "You have not ranted yet... Start ranting now!" },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
                             // TODO: add size settings

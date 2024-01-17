@@ -351,10 +351,12 @@ fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (
                             text = rant.text.ifEmpty { "You have not ranted yet... Start ranting now!" },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
+                            minLines = 2,
                             // TODO: add size settings
                             style = MaterialTheme.typography.bodySmall,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                         )
                     }
 

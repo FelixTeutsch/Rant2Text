@@ -170,9 +170,9 @@ fun RantList(
     val state = rantViewModel.rantViewState.collectAsState()
 
     val groupedRants = state.value.rants.filter {
-        state.value.searchText.isEmpty() || it.text.contains(state.value.searchText) || it.title.contains(
-            state.value.searchText
-        )
+        state.value.searchText.isEmpty()
+                || it.text.lowercase().contains(state.value.searchText.lowercase())
+                || it.title.lowercase().contains(state.value.searchText.lowercase())
     }.groupBy { extractDay(it.date) }
 
     LazyColumn(

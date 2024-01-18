@@ -37,9 +37,11 @@ class RantChatModel(private val dao: RantDao) : ViewModel() {
 
     fun saveRantMsg(rantMsg: RantTableModel) {
         //TODO: update the save to creta e a new table instead of editing the passed rant
-        Log.d("personal", "rant is: ${rantMsg}")
         _rantChatState.update { it.copy(rant = rantMsg) }
         Log.d("Personal", "${rantChatState.value.rant}")
+        viewModelScope.launch {
+            dao.updateRant(rantChatState.value.rant)
+        }
     }
 
     //for testing inserted one rant into db

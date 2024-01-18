@@ -248,7 +248,7 @@ fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            rantViewModel.openEditModal(rant)
+                            openRantChat(rant.id)
                         }
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(horizontal = 16.dp, vertical = 4.dp),

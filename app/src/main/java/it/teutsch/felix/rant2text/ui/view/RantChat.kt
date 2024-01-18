@@ -49,9 +49,7 @@ import androidx.compose.ui.unit.sp
 import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
-import it.teutsch.felix.rant2text.ui.state.VoiceToTextParserState
 import it.teutsch.felix.rant2text.ui.voiceToText.VoicetoTextParser
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun RantChatView(
@@ -173,8 +171,9 @@ fun messageOptions(
     rantChatModel: RantChatModel,
     voiceToTextParser: VoicetoTextParser
 ) {
-    val _voiceRecState = MutableStateFlow(VoiceToTextParserState())
-    val voiceRecState = _voiceRecState.collectAsState()
+    val voiceRecState = voiceToTextParser.state.collectAsState()
+//    val _voiceRecState = MutableStateFlow(VoiceToTextParserState())
+//    val voiceRecState = _voiceRecState.collectAsState()
 
     val context = LocalContext.current
 
@@ -240,6 +239,9 @@ fun messageOptions(
             LaunchedEffect(voiceRecState.value.spokenText) {
                 Log.d("personal", "test has been added: ${voiceRecState.value.spokenText}")
             }
+            LaunchedEffect(voiceRecState.value.isSpeaking) {
+                Log.d("personal", "ispseaking launched: ${voiceRecState.value.isSpeaking}")
+            }
 
             IconButton(
                 onClick = {
@@ -251,9 +253,7 @@ fun messageOptions(
 //                        Log.d("personal", "listen")
                         voiceToTextParser.startListening()
 //                        Log.d("personal", " after on${voiceRecState.value.isSpeaking}")
-
                     }
-
                     typedMsg = TextFieldValue(voiceRecState.value.spokenText)
 //                    Log.d("personal", "talk is: ${voiceRecState.value.spokenText}")
                 },

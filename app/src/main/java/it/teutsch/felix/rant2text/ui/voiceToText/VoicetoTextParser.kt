@@ -19,7 +19,7 @@ class VoicetoTextParser(private val app: Application) : RecognitionListener {
 
     val recognizer = SpeechRecognizer.createSpeechRecognizer(app)
     fun startListening(languageCode: String = "en") {
-        _state.update { VoiceToTextParserState() }
+//        _state.update { VoiceToTextarserState() }
 
         if (!SpeechRecognizer.isRecognitionAvailable(app)) {
             _state.update {

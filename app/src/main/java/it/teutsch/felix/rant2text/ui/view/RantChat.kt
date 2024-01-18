@@ -238,6 +238,8 @@ fun messageOptions(
 
             LaunchedEffect(voiceRecState.value.spokenText) {
                 Log.d("personal", "test has been added: ${voiceRecState.value.spokenText}")
+                rant.text = voiceRecState.value.spokenText
+                rantChatModel.saveRantMsg(rant)
             }
             LaunchedEffect(voiceRecState.value.isSpeaking) {
                 Log.d("personal", "ispseaking launched: ${voiceRecState.value.isSpeaking}")
@@ -254,7 +256,7 @@ fun messageOptions(
                         voiceToTextParser.startListening()
 //                        Log.d("personal", " after on${voiceRecState.value.isSpeaking}")
                     }
-                    typedMsg = TextFieldValue(voiceRecState.value.spokenText)
+                    // typedMsg = TextFieldValue(voiceRecState.value.spokenText)
 //                    Log.d("personal", "talk is: ${voiceRecState.value.spokenText}")
                 },
                 modifier = Modifier

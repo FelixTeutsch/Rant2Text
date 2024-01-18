@@ -6,5 +6,6 @@ import it.teutsch.felix.rant2text.ui.enumeration.EDialog
 data class RantViewState(
     val rants: List<RantTableModel> = emptyList(),
     val targetRant: RantTableModel = RantTableModel(),
+    var searchText: String = "",
     override val dialog: EDialog = EDialog.NONE,
 ) : MasterState

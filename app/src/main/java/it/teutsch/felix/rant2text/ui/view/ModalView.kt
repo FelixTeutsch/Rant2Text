@@ -16,8 +16,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -170,8 +170,7 @@ fun CreateRantModal(
     if (state.value.dialog == EDialog.CREATE_RANT || state.value.dialog == EDialog.EDIT_RANT) {
         val isEditMode = state.value.dialog == EDialog.EDIT_RANT
         val title = if (isEditMode) "Edit Rant" else "Create Rant"
-        val rant =
-            state.value.targetRant // Assuming you have a property for the edited rant in your view state
+        val rant = state.value.targetRant
 
         // Composable content for your modal
         Dialog(
@@ -189,7 +188,7 @@ fun CreateRantModal(
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -219,42 +218,21 @@ fun CreateRantModal(
                                 }
                             }
                         }
-                        // Rant Title Text Input
+
                         var rantTitle by rememberSaveable { mutableStateOf(rant.title) }
                         OutlinedTextField(
                             value = rantTitle,
                             onValueChange = { rantTitle = it },
-                            label = {
-                                Text(
-                                    "Rant Title",
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                cursorColor = MaterialTheme.colorScheme.primaryContainer,
-                                // textColor = MaterialTheme.colorScheme.onSurface,
-                                focusedBorderColor = MaterialTheme.colorScheme.primaryContainer,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                            )
+                            label = { Text("Rant Title") },
+                            modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Slider for Rant Level
                         var rantLevel by rememberSaveable { mutableStateOf(rant.angerLevel) }
                         var rantValue by rememberSaveable { mutableFloatStateOf(rant.angerLevel.angerLevel.toFloat()) }
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            //horizontalArrangement = Arrangement.SpaceBetween
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(
-                                text = "How angry are you?",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = MaterialTheme.typography.labelMedium,
-                            )
+                            Text("How angry are you?", style = MaterialTheme.typography.labelMedium)
                             Slider(
                                 value = rantValue,
                                 onValueChange = {
@@ -263,16 +241,12 @@ fun CreateRantModal(
                                 },
                                 valueRange = 0f..5f,
                                 steps = EAngerLevel.values().size - 2,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 16.dp)
+                                colors = SliderDefaults.colors(
+                                    thumbColor = rantLevel.angerColor,
+                                    activeTrackColor = rantLevel.angerColor,
+                                )
                             )
-
-                            Text(
-                                text = rantLevel.angerName,
-                                modifier = Modifier.padding(start = 16.dp),
-                                color = rantLevel.angerColor
-                            )
+                            Text(text = rantLevel.angerName, color = rantLevel.angerColor)
                         }
 
                         // Buttons (Cancel and Confirm)
@@ -298,7 +272,7 @@ fun CreateRantModal(
                                             RantTableModel(
                                                 title = rantTitle,
                                                 text = rant.text,
-                                                angerLevel = rantLevel
+                                                angerLevel = rantLevel,
                                             )
                                         )
                                         openRantChat(newRantId)
@@ -313,3 +287,5 @@ fun CreateRantModal(
         )
     }
 }
+
+

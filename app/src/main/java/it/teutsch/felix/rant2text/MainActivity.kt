@@ -1,5 +1,6 @@
 package it.teutsch.felix.rant2text
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,6 +32,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,14 +43,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import it.teutsch.felix.rant2text.data.RantDatabase
+import it.teutsch.felix.rant2text.data.dataStore.SettingsData
+import it.teutsch.felix.rant2text.serializer.SettingsSerializer
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import it.teutsch.felix.rant2text.ui.theme.Rant2TextTheme
 import it.teutsch.felix.rant2text.ui.view.RantListView
 import kotlinx.coroutines.launch
+
+val Context.dataStore by dataStore("app-settings.json", serializer = SettingsSerializer)
 
 data class NavigationItem(
     val title: String,
@@ -99,6 +106,9 @@ class MainActivity : ComponentActivity() {
                         )
                     )
 
+                    // DATA STORE
+                    val settings = dataStore.data.collectAsState(initial = SettingsData()).value
+                    // DrawerState
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     var selectedItemIndex by rememberSaveable { mutableStateOf(0) }
@@ -174,9 +184,10 @@ class MainActivity : ComponentActivity() {
                         },
                         drawerState = drawerState,
                     ) {
-                        if (selectedItemIndex == 0)
+                        if (selectedItemIndex == 0 || selectedItemIndex == 2) {
                             RantListView(
                                 rantViewModel,
+                                settings = settings,
                                 openDrawer = {
                                     scope.launch {
                                         drawerState.open()
@@ -188,21 +199,25 @@ class MainActivity : ComponentActivity() {
                                     }
                                     startActivity(intent)
                                     rantViewModel.getRants()
-                                }
+                                },
                             )
-                        else if (selectedItemIndex == 1)
+
+                            // This way, if a user closes the Intent it does not show an empty screen but the landing page!
+                            if (selectedItemIndex == 2) {
+                                Text(text = "Error when opening Settings. Please restart App!")
+                                val intent = Intent(this, SettingsActivity::class.java)
+                                selectedItemIndex = 0
+                                startActivity(intent)
+                            }
+                        } else if (selectedItemIndex == 1)
                             Text(text = "Statistics")
-                        else if (selectedItemIndex == 2) {
-                            val intent = Intent(this, SettingsActivity::class.java)
-                            startActivity(intent)
-                        } else if (selectedItemIndex == 3)
+                        else if (selectedItemIndex == 3)
                             Text(text = "About")
                     }
                 }
             }
         }
     }
-
 
     override fun onResume() {
         super.onResume()

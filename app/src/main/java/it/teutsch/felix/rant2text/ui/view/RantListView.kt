@@ -54,10 +54,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.teutsch.felix.rant2text.R
+import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import java.text.SimpleDateFormat
@@ -68,6 +71,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun RantListView(
     rantViewModel: RantViewModel,
+    settings: SettingsData,
     openDrawer: () -> Unit,
     openRantChat: (id: Int) -> Unit
 ) {
@@ -98,7 +102,7 @@ fun RantListView(
     )
 
     // Create & Delete Modals
-    CreateRantModal(rantViewModel = rantViewModel, openRantChat)
+    CreateRantModal(rantViewModel = rantViewModel, openRantChat, settings)
     DeleteRantModal(rantViewModel = rantViewModel)
 }
 
@@ -393,12 +397,13 @@ fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
-                            text = rant.text.ifEmpty { "You have not ranted yet... Start ranting now!" },
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = rant.text.ifEmpty { "Not ranted yet!" },
                             maxLines = 2,
                             minLines = 2,
                             // TODO: add size settings
                             style = MaterialTheme.typography.bodySmall,
+                            fontStyle = if (rant.text.isEmpty()) FontStyle.Italic else MaterialTheme.typography.bodySmall.fontStyle,
+                            fontWeight = if (rant.text.isEmpty()) FontWeight.Light else MaterialTheme.typography.bodySmall.fontWeight,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()

@@ -72,6 +72,7 @@ fun RantListView(rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) 
     // Load Rants from Database
     rantViewModel.getRants()
 
+    // Create Scaffold
     Scaffold(
         topBar = {
             RantTopBar(

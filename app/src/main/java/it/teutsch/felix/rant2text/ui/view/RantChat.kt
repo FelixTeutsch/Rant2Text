@@ -15,14 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -92,9 +90,12 @@ fun RantChatView(
         )
 //        chatSection(state.value.text)
 //        messageOptions()
-        chatSection(messageText = state.value.rant.text, modifier = Modifier.weight(0.9f))
+        chatSection(
+            messageText = state.value.rant.text,
+            modifier = Modifier.weight(0.9f)
+        )
         messageOptions(
-            modifier = Modifier.weight(0.1f),
+            modifier = Modifier.weight(0.12f),
             state.value.rant,
             rantChatModel,
             voiceToTextParser
@@ -113,7 +114,7 @@ fun chatSection(messageText: String, modifier: Modifier) {
             .padding(16.dp)
             .then(modifier),
         //so that the msgs dont stack upawards but instead get reversed
-        reverseLayout = true
+        reverseLayout = true,
     ) {
         items(count = 1) {
             messageItem(messageText = messageText)
@@ -128,7 +129,8 @@ private val userChatBubble = RoundedCornerShape(10.dp, 10.dp, 0.dp, 10.dp)
 fun messageItem(messageText: String?) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.End
     ) {
         if (!messageText.isNullOrEmpty()) {
             Box(
@@ -157,7 +159,7 @@ fun messageItem(messageText: String?) {
                 fontSize = 12.sp,
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .align(Alignment.Start),
+                    .align(Alignment.End),
             )
         }
     }
@@ -186,12 +188,22 @@ fun messageOptions(
     }
 
 
+    val iconDisplay: Painter =
+        if (typedMsg.text.isEmpty()) {
+            if (!voiceRecState.value.isSpeaking) {
+                painterResource(id = R.drawable.baseline_mic_24)
+            } else {
+                painterResource(id = R.drawable.baseline_stop_24)
+            }
+        } else {
+            painterResource(R.drawable.baseline_send_24)
+        }
+
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .then(modifier),
-//        backgroundColor = Color.Red, // Set the background color directly on the Card
         colors = CardDefaults.cardColors(Color.Transparent)
 
 //        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
@@ -199,7 +211,7 @@ fun messageOptions(
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
         ) {
 
             OutlinedTextField(
@@ -209,26 +221,44 @@ fun messageOptions(
                     typedMsg = newText
                 },
                 shape = RoundedCornerShape(25.dp),
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Send,
-                        contentDescription = "Send message button",
-                        modifier = Modifier
-                            .clickable {
-                                //                        Log.d("personal", "rant is: $rant")
-                                rant.text = typedMsg.text
-                                rantChatModel.saveRantMsg(rant)
-                                typedMsg = TextFieldValue("")
-                            }
-                    )
-                },
                 modifier = Modifier
-                    .weight(0.9F)
+                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .padding(horizontal = 5.dp, vertical = 10.dp)
                     .background(
                         color = Color.LightGray,
                         shape = RoundedCornerShape(25.dp) // Set the same shape for the background
-                    ),
+                    )
+                    .align(Alignment.Bottom),
+
+
+                trailingIcon = {
+                    Icon(
+                        painter = iconDisplay,
+                        contentDescription = "Send message button",
+                        modifier = Modifier
+                            .clickable {
+                                if (typedMsg.text.isEmpty()) {
+                                    //mic icon code
+                                    if (voiceRecState.value.isSpeaking) {
+                                        voiceToTextParser.stopListening()
+                                    } else {
+                                        voiceToTextParser.startListening()
+                                    }
+                                } else {
+                                    //Log.d("personal", "rant is: $rant")
+                                    rant.text = typedMsg.text
+                                    rantChatModel.saveRantMsg(rant)
+                                    typedMsg = TextFieldValue("")
+                                }
+
+                            }
+                            .fillMaxHeight()
+                            .fillMaxHeight()
+
+                    )
+                },
+
 
                 )
 
@@ -236,31 +266,6 @@ fun messageOptions(
                 Log.d("personal", "test has been added: ${voiceRecState.value.spokenText}")
                 rant.text = voiceRecState.value.spokenText
                 rantChatModel.saveRantMsg(rant)
-            }
-
-            IconButton(
-                onClick = {
-                    if (voiceRecState.value.isSpeaking) {
-                        voiceToTextParser.stopListening()
-                    } else {
-                        voiceToTextParser.startListening()
-                    }
-                },
-                modifier = Modifier
-                    .weight(0.1F)
-                    .background(Color.Yellow, CircleShape)
-                    .align(Alignment.CenterVertically),
-            ) {
-                val micIcon: Painter = if (!voiceRecState.value.isSpeaking) {
-                    painterResource(id = R.drawable.baseline_mic_24)
-                } else {
-                    painterResource(id = R.drawable.baseline_stop_24) // Set a different icon when the condition is false
-                }
-                Icon(
-                    painter = micIcon,
-                    contentDescription = "Send message button",
-                    modifier = Modifier
-                )
             }
         }
 

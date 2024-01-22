@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
@@ -16,6 +17,13 @@ import it.teutsch.felix.rant2text.data.RantDatabase
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import it.teutsch.felix.rant2text.ui.theme.Rant2TextTheme
 import it.teutsch.felix.rant2text.ui.view.RantListView
+
+data class NavigationItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
+    val badgeCount: Int? = null
+)
 
 class MainActivity : ComponentActivity() {
     private val db by lazy {

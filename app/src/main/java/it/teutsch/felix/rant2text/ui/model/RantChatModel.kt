@@ -4,20 +4,22 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.teutsch.felix.rant2text.data.dao.RantDao
+import it.teutsch.felix.rant2text.data.dao.TextDao
 import it.teutsch.felix.rant2text.data.model.RantTableModel
+import it.teutsch.felix.rant2text.data.model.TextTableModel
 import it.teutsch.felix.rant2text.ui.state.RantChatState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RantChatModel(private val dao: RantDao) : ViewModel() {
+class RantChatModel(private val rantdao: RantDao, private val textDao: TextDao) : ViewModel() {
     private val _rantChatState = MutableStateFlow(RantChatState("", "", RantTableModel()))
     val rantChatState = _rantChatState.asStateFlow()
 
     fun getRantById(rantId: Int) {
         viewModelScope.launch {
-            dao.getRantById(rantId).collect { rant ->
+            rantdao.getRantById(rantId).collect { rant ->
                 Log.d("personalErr", "there is an err with the rant: $rant")
 //                Log.d("database", "the rant isv ${rant.title}")
                 if (rant != null) {
@@ -27,7 +29,6 @@ class RantChatModel(private val dao: RantDao) : ViewModel() {
                             text = rant.text,
                             rant = rant,
                             angerLevel = rant.angerLevel
-
                         )
                     }
                 } else {
@@ -42,14 +43,39 @@ class RantChatModel(private val dao: RantDao) : ViewModel() {
         _rantChatState.update { it.copy(rant = rantMsg) }
         Log.d("Personal", "${rantChatState.value.rant}")
         viewModelScope.launch {
-            dao.updateRant(rantChatState.value.rant)
+            rantdao.updateRant(rantChatState.value.rant)
         }
     }
 
-    //for testing inserted one rant into db
-//    fun insertRant(rant: RantTableModel) {
-//        viewModelScope.launch {
-//            dao.insertRant(rant)
-//        }
-//    }
+    fun saveTextMsg(textMsg: TextTableModel) {
+        viewModelScope.launch {
+            textDao.insertText(textMsg)
+        }
+    }
+
+    fun getTextMsgs(rantId: Int) {
+        viewModelScope.launch {
+            textDao.getTextsByRantId(rantId).collect { texts ->
+                Log.d("personalErr", "there is an err with the texts: $texts")
+                if (texts != null) {
+                    _rantChatState.update { it.copy(texts = texts) }
+                } else {
+                    _rantChatState.update { it.copy(texts = emptyList()) }
+                }
+            }
+        }
+    }
+
+    fun updatetextMsg(textMsg: TextTableModel) {
+        viewModelScope.launch {
+            textDao.updateText(textMsg)
+        }
+    }
+
+    fun deleteTextMsg(textMsg: TextTableModel) {
+        viewModelScope.launch {
+            textDao.deleteText(textMsg)
+        }
+    }
+
 }

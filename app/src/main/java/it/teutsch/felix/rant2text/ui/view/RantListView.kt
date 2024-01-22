@@ -66,7 +66,11 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun RantListView(rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) {
+fun RantListView(
+    rantViewModel: RantViewModel,
+    openDrawer: () -> Unit,
+    openRantChat: (id: Int) -> Unit
+) {
     val state = rantViewModel.rantViewState.collectAsState()
 
     // Load Rants from Database
@@ -76,6 +80,7 @@ fun RantListView(rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) 
         topBar = {
             RantTopBar(
                 rantViewModel = rantViewModel,
+                openDrawer = openDrawer,
                 onRefreshClick = { rantViewModel.getRants() }
             )
         },
@@ -427,7 +432,7 @@ fun RantFab(onClick: () -> Unit) {
 }
 
 @Composable
-fun RantTopBar(rantViewModel: RantViewModel, onRefreshClick: () -> Unit) {
+fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshClick: () -> Unit) {
     val state = rantViewModel.rantViewState.collectAsState()
 
     Row(
@@ -472,6 +477,9 @@ fun RantTopBar(rantViewModel: RantViewModel, onRefreshClick: () -> Unit) {
                     contentDescription = "Menu",
                     modifier = Modifier
                         .padding(horizontal = 32.dp, vertical = 0.dp)
+                        .clickable {
+                            openDrawer()
+                        },
                 )
             },
             trailingIcon = {

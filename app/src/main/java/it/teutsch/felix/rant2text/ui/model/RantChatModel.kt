@@ -25,7 +25,9 @@ class RantChatModel(private val dao: RantDao) : ViewModel() {
                         it.copy(
                             title = rant.title,
                             text = rant.text,
-                            rant = rant
+                            rant = rant,
+                            angerLevel = rant.angerLevel
+
                         )
                     }
                 } else {

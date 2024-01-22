@@ -2,9 +2,7 @@ package it.teutsch.felix.rant2text.ui.view
 
 import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -59,6 +58,7 @@ fun RantChatView(
     closeChatIntent: () -> Unit
 ) {
     val state = rantChatModel.rantChatState.collectAsState()
+
 //
 //    val ranty: RantTableModel = RantTableModel(
 //        title = "life in general",
@@ -75,8 +75,8 @@ fun RantChatView(
 
     }
 
-
     Log.d("dbwork", "state is ${state.value.rant.title}")
+    Log.d("personal", "color is ${state.value.angerLevel.angerColor}")
 
     Column(
         modifier = Modifier
@@ -86,7 +86,9 @@ fun RantChatView(
     ) {
         topBarSection(
             title = state.value.rant.title,
-            closeChatIntent
+            closeChatIntent,
+            color = state.value.angerLevel.angerColor,
+            state.value.rant
         )
 //        chatSection(state.value.text)
 //        messageOptions()
@@ -198,7 +200,6 @@ fun messageOptions(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color.Red)
         ) {
 
             OutlinedTextField(
@@ -231,40 +232,24 @@ fun messageOptions(
 
                 )
 
-            Log.d(
-                "personal",
-                "spoken: ${voiceRecState.value.spokenText}, isspekaing: ${voiceRecState.value.isSpeaking}"
-            )
-
             LaunchedEffect(voiceRecState.value.spokenText) {
                 Log.d("personal", "test has been added: ${voiceRecState.value.spokenText}")
                 rant.text = voiceRecState.value.spokenText
                 rantChatModel.saveRantMsg(rant)
             }
-            LaunchedEffect(voiceRecState.value.isSpeaking) {
-                Log.d("personal", "ispseaking launched: ${voiceRecState.value.isSpeaking}")
-            }
 
             IconButton(
                 onClick = {
                     if (voiceRecState.value.isSpeaking) {
-//                        Log.d("personal", "stop")
-
                         voiceToTextParser.stopListening()
                     } else {
-//                        Log.d("personal", "listen")
                         voiceToTextParser.startListening()
-//                        Log.d("personal", " after on${voiceRecState.value.isSpeaking}")
                     }
-                    // typedMsg = TextFieldValue(voiceRecState.value.spokenText)
-//                    Log.d("personal", "talk is: ${voiceRecState.value.spokenText}")
                 },
                 modifier = Modifier
                     .weight(0.1F)
-                    .background(Color.Red, CircleShape)
+                    .background(Color.Yellow, CircleShape)
                     .align(Alignment.CenterVertically),
-
-//                VerticalAlignmentLine = Alignment.CenterVertically
             ) {
                 val micIcon: Painter = if (!voiceRecState.value.isSpeaking) {
                     painterResource(id = R.drawable.baseline_mic_24)
@@ -275,18 +260,7 @@ fun messageOptions(
                     painter = micIcon,
                     contentDescription = "Send message button",
                     modifier = Modifier
-
                 )
-            }
-
-
-            AnimatedContent(targetState = voiceRecState.value.isSpeaking, label = "") {
-
-                if (it) {
-                    Text(text = "hi")
-                } else {
-                    Text(text = "bye")
-                }
             }
         }
 
@@ -294,13 +268,21 @@ fun messageOptions(
 }
 
 @Composable
-fun topBarSection(title: String, closeChatIntent: () -> Unit) {
+fun topBarSection(
+    title: String,
+    closeChatIntent: () -> Unit,
+    color: Color,
+    rantTable: RantTableModel
+) {
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp),
 
+        colors = CardDefaults.cardColors(color.copy(alpha = 0.8F)),
 
+        shape = RectangleShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
 
@@ -314,7 +296,6 @@ fun topBarSection(title: String, closeChatIntent: () -> Unit) {
                 onClick = { closeChatIntent() },
                 modifier = Modifier
                     .size(60.dp)
-
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -331,6 +312,7 @@ fun topBarSection(title: String, closeChatIntent: () -> Unit) {
                 text = '"' + title + '"',
                 fontWeight = FontWeight.SemiBold,
             )
+//            Spacer(modifier = Modifier.fillMaxWidth().align(Alignment.End))
         }
 
     }

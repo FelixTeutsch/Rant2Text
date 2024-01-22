@@ -45,6 +45,7 @@ class RantActivity : ComponentActivity() {
         }
     )
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -69,8 +70,6 @@ class RantActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
-
                     val rantId = intent.getIntExtra("rantId", 1)
 //                    Text(text = "RantActivity $rantId")
                     RantChatView(rantChatModel, rantId, voiceToTextParser) {

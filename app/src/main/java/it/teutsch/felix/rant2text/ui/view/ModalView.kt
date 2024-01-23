@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.enumeration.EAngerLevel
 import it.teutsch.felix.rant2text.ui.enumeration.EDialog
@@ -162,7 +163,8 @@ fun ModalButtons(
 @Composable
 fun CreateRantModal(
     rantViewModel: RantViewModel,
-    openRantChat: (Int) -> Unit
+    openRantChat: (Int) -> Unit,
+    settings: SettingsData? = null
 ) {
     val state = rantViewModel.rantViewState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -206,7 +208,11 @@ fun CreateRantModal(
                             // Delete button in case of Edit mode
                             if (isEditMode) {
                                 IconButton(
-                                    onClick = { rantViewModel.clickDeleteRant(rant) },
+                                    onClick = {
+                                        if (settings == null || settings.confirmBeforeDelete) rantViewModel.clickDeleteRant(
+                                            rant
+                                        ) else rantViewModel.deleteRant(rant)
+                                    },
                                     modifier = Modifier
                                         .padding(bottom = 16.dp)
                                 ) {
@@ -258,14 +264,19 @@ fun CreateRantModal(
                             onConfirm = {
                                 rantViewModel.dismissDialog()
                                 if (isEditMode) {
-                                    rantViewModel.updateRant(
-                                        RantTableModel(
-                                            title = rantTitle,
-                                            text = rant.text,
-                                            angerLevel = EAngerLevel.fromInt(rantLevel.angerLevel),
-                                            id = rant.id
+                                    coroutineScope.launch {
+                                        rantViewModel.updateRant(
+                                            RantTableModel(
+                                                title = rantTitle,
+                                                text = rant.text,
+                                                angerLevel = EAngerLevel.fromInt(rantLevel.angerLevel),
+                                                id = rant.id
+                                            )
                                         )
-                                    )
+
+                                        if (settings?.openRantOnEdit == true)
+                                            openRantChat(rant.id)
+                                    }
                                 } else {
                                     coroutineScope.launch {
                                         val newRantId = rantViewModel.saveRant(
@@ -275,7 +286,8 @@ fun CreateRantModal(
                                                 angerLevel = rantLevel,
                                             )
                                         )
-                                        openRantChat(newRantId)
+                                        if (settings?.openRantOnCreate == true)
+                                            openRantChat(newRantId)
                                     }
                                 }
                             },

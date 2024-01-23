@@ -12,6 +12,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -194,11 +195,14 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: Se
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
                 onClick = { isTimeVisible = !isTimeVisible },
                 onLongClick = {
                     isDialogOpen = true
                     editText = TextFieldValue(text.text)
                 }),
+
         horizontalAlignment = Alignment.End
     ) {
         if (!text.text.isNullOrEmpty()) {

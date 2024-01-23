@@ -53,6 +53,7 @@ import it.teutsch.felix.rant2text.serializer.SettingsSerializer
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import it.teutsch.felix.rant2text.ui.theme.Rant2TextTheme
 import it.teutsch.felix.rant2text.ui.view.RantListView
+import it.teutsch.felix.rant2text.ui.view.StatisticView
 import kotlinx.coroutines.launch
 
 val Context.dataStore by dataStore("app-settings.json", serializer = SettingsSerializer)
@@ -246,7 +247,20 @@ class MainActivity : ComponentActivity() {
                                 },
                             )
                         } else if (selectedItemIndex == 1)
-                            Text(text = "Statistics")
+                            StatisticView(rantViewModel,
+                                settings = settings,
+                                openDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                },
+                                openRantChat = {
+                                    val intent = Intent(this, RantActivity::class.java).apply {
+                                        putExtra("rantId", it)
+                                    }
+                                    startActivity(intent)
+                                    rantViewModel.getRants()
+                                })
 
                     }
                 }

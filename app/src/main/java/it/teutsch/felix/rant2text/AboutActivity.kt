@@ -1,5 +1,7 @@
 package it.teutsch.felix.rant2text
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,7 +25,14 @@ class AboutActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val settings = dataStore.data.collectAsState(initial = SettingsData()).value
-                    AboutView(settings) {
+                    AboutView(settings, openWebsite = {
+                        startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://rant2text.teutsch.it")
+                            )
+                        )
+                    }) {
                         finish()
                     }
                 }

@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import it.teutsch.felix.rant2text.R
+import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.data.model.TextTableModel
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
@@ -78,6 +79,7 @@ fun RantChatView(
     rantChatModel: RantChatModel,
     rantId: Int,
     voiceToTextParser: VoicetoTextParser,
+    settings: SettingsData,
     closeChatIntent: () -> Unit
 ) {
     val state = rantChatModel.rantChatState.collectAsState()
@@ -120,7 +122,8 @@ fun RantChatView(
             modifier = Modifier.weight(0.9f),
             rantId,
             rantChatModel,
-            state.value.texts
+            state.value.texts,
+            settings
         )
         Log.d("rant", "rant is: ${state.value.rant}")
         messageOptions(
@@ -140,7 +143,8 @@ fun chatSection(
     modifier: Modifier,
     rantId: Int,
     rantChatModel: RantChatModel,
-    texts: List<TextTableModel>
+    texts: List<TextTableModel>,
+    settings: SettingsData
 ) {
     rantChatModel.getTextMsgs(rantId)
     Log.d("msgsDb", "retrieved msgs are: ${texts.size}")
@@ -155,7 +159,7 @@ fun chatSection(
         reverseLayout = true,
     ) {
         items(texts.size) { index ->
-            messageItem(texts[index], rantChatModel)
+            messageItem(texts[index], rantChatModel, settings)
         }
     }
 
@@ -169,10 +173,10 @@ private val userChatBubble = RoundedCornerShape(10.dp, 10.dp, 0.dp, 10.dp)
     ExperimentalMaterialApi::class
 )
 @Composable
-fun messageItem(text: TextTableModel, rantChatModel: RantChatModel) {
+fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: SettingsData) {
     val sdf = SimpleDateFormat("dd MMM yyyy 'at' HH:mm", Locale.getDefault())
     val formattedDate = sdf.format(Date(text.date))
-    var isTimeVisible by remember { mutableStateOf(false) }
+    var isTimeVisible by remember { mutableStateOf(settings.showTimeStampsForMessages) }
     var isDialogOpen by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf(TextFieldValue(text.text)) }
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +21,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import it.teutsch.felix.rant2text.data.RantDatabase
+import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
 import it.teutsch.felix.rant2text.ui.theme.Rant2TextTheme
 import it.teutsch.felix.rant2text.ui.view.RantChatView
@@ -71,9 +73,10 @@ class RantActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    val settings = dataStore.data.collectAsState(initial = SettingsData()).value
                     val rantId = intent.getIntExtra("rantId", 1)
 //                    Text(text = "RantActivity $rantId")
-                    RantChatView(rantChatModel, rantId, voiceToTextParser) {
+                    RantChatView(rantChatModel, rantId, voiceToTextParser, settings) {
                         db.close()
                         finish()
                     }

@@ -99,7 +99,7 @@ class VoicetoTextParser(private val app: Application) : RecognitionListener {
                     )
                 }
             }
-        Log.d("personal", "REUSLTS: ${_state.value.spokenText}")
+//        Log.d("Felixtest", "REUSLTS: ${_state.value.spokenText}")
     }
 
     override fun onPartialResults(partialResults: Bundle?) = Unit

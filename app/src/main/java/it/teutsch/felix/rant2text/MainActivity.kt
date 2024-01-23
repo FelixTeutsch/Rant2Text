@@ -65,7 +65,10 @@ data class NavigationItem(
 
 class MainActivity : ComponentActivity() {
     private val db by lazy {
-        Room.databaseBuilder(this, RantDatabase::class.java, "RantDatabase.db").build()
+        Room.databaseBuilder(this, RantDatabase::class.java, "RantDatabase.db")
+            // TODO: remove once database changes and nothing works anymore
+            //.fallbackToDestructiveMigration()
+            .build()
     }
 
     private val rantViewModel by viewModels<RantViewModel>(

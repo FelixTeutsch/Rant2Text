@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
@@ -163,7 +164,10 @@ fun chatSection(
 private val userChatBubble = RoundedCornerShape(10.dp, 10.dp, 0.dp, 10.dp)
 
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalAnimationApi::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class
+)
 @Composable
 fun messageItem(text: TextTableModel, rantChatModel: RantChatModel) {
     val sdf = SimpleDateFormat("dd MMM yyyy 'at' HH:mm", Locale.getDefault())
@@ -171,6 +175,16 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel) {
     var isTimeVisible by remember { mutableStateOf(false) }
     var isDialogOpen by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf(TextFieldValue(text.text)) }
+
+//    val dismissState = rememberDismissState(
+//        confirmStateChange = {
+//            if (it == DismissValue.DismissedToEnd) {
+//                // Handle the swipe-to-dismiss action here
+//                Log.d("Swipe", "Message swiped!")
+//            }
+//            true
+//        }
+//    )
 
     Column(
         modifier = Modifier
@@ -180,8 +194,7 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel) {
                 onLongClick = {
                     isDialogOpen = true
                     editText = TextFieldValue(text.text)
-                }
-            ),
+                }),
         horizontalAlignment = Alignment.End
     ) {
         if (!text.text.isNullOrEmpty()) {
@@ -226,6 +239,8 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel) {
             }
         }
     }
+
+
 
     Spacer(modifier = Modifier.height(15.dp))
 

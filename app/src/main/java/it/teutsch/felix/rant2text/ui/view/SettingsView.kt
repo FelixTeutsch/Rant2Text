@@ -77,7 +77,7 @@ fun SettingsContent(
         item {
             SettingsGroup(title = "General") {
                 SettingsItem(
-                    title = "Open Rant on Edit",
+                    title = "Open Rant on Create",
                     description = "Immediately open Rant Chat when creating a new Rant",
                     checked = settings.openRantOnCreate,
                     onSwitchChange = {
@@ -112,6 +112,19 @@ fun SettingsContent(
                         }
                     }
                 )
+
+                SettingsItem(
+                    title = "Show timestamps for messages",
+                    description = "Display all timestamps in a chat by default (without clicking on it)",
+                    checked = settings.showTimeStampsForMessages,
+                    onSwitchChange = {
+                        scope.launch {
+                            dataStore.updateData { currentSettings ->
+                                currentSettings.copy(showTimeStampsForMessages = it)
+                            }
+                        }
+                    }
+                )
             }
         }
     }
@@ -137,7 +150,6 @@ fun SettingsGroup(title: String, content: @Composable () -> Unit) {
                 defaultElevation = 8.dp
             ),
         ) {
-
             content()
         }
     }

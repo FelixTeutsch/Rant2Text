@@ -91,11 +91,15 @@ class MainActivity : ComponentActivity() {
                         NavigationItem(
                             title = "Rants",
                             icon = Icons.Rounded.Home,
+                            badgeCount = 2
                         ),
                         NavigationItem(
                             title = "Statistics",
                             icon = Icons.Rounded.BarChart,
                         ),
+                    )
+
+                    val extra = listOf(
                         NavigationItem(
                             title = "Settings",
                             icon = Icons.Rounded.Settings,
@@ -151,20 +155,14 @@ class MainActivity : ComponentActivity() {
                                     )
 
                                     items.forEachIndexed { index, item ->
-                                        // Insert Divider for Settings & About
-                                        if (index == 2) {
-                                            Spacer(modifier = Modifier.weight(1f))
-                                            Divider(
-                                                modifier = Modifier
-                                                    .padding(vertical = 8.dp)
-                                                    .fillMaxWidth(),
-                                                color = MaterialTheme.colorScheme.secondaryContainer
-                                            )
-                                        }
-
                                         NavigationDrawerItem(
                                             label = { Text(text = item.title) },
                                             selected = index == selectedItemIndex,
+                                            badge = {
+                                                if (item.badgeCount != null) {
+                                                    Text(text = item.badgeCount.toString())
+                                                }
+                                            },
                                             onClick = {
                                                 selectedItemIndex = index
                                                 scope.launch {
@@ -179,12 +177,55 @@ class MainActivity : ComponentActivity() {
                                             },
                                         )
                                     }
+
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Divider(
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp)
+                                            .fillMaxWidth(),
+                                        color = MaterialTheme.colorScheme.secondaryContainer
+                                    )
+
+                                    extra.forEachIndexed { index, item ->
+                                        NavigationDrawerItem(
+                                            label = { Text(text = item.title) },
+                                            selected = false,
+                                            onClick = {
+                                                scope.launch {
+                                                    drawerState.close()
+                                                }
+                                                if (index == 0) {
+                                                    startActivity(
+                                                        Intent(
+                                                            this@MainActivity,
+                                                            SettingsActivity::class.java
+                                                        )
+                                                    )
+                                                } else if (index == 1) {
+                                                    // TODO(Create about Activity)
+//                                                    startActivity(
+//                                                        Intent(
+//                                                            this@MainActivity,
+//                                                            AboutActivity::class.java
+//                                                        )
+//                                                    )
+                                                }
+                                            },
+                                            icon = {
+                                                Icon(
+                                                    imageVector = item.icon!!,
+                                                    contentDescription = item.title
+                                                )
+                                            },
+                                        )
+                                    }
+
                                 }
                             }
                         },
                         drawerState = drawerState,
                     ) {
-                        if (selectedItemIndex == 0 || selectedItemIndex == 2) {
+                        if (selectedItemIndex == 0) {
                             RantListView(
                                 rantViewModel,
                                 settings = settings,
@@ -201,18 +242,9 @@ class MainActivity : ComponentActivity() {
                                     rantViewModel.getRants()
                                 },
                             )
-
-                            // This way, if a user closes the Intent it does not show an empty screen but the landing page!
-                            if (selectedItemIndex == 2) {
-                                Text(text = "Error when opening Settings. Please restart App!")
-                                val intent = Intent(this, SettingsActivity::class.java)
-                                selectedItemIndex = 0
-                                startActivity(intent)
-                            }
                         } else if (selectedItemIndex == 1)
                             Text(text = "Statistics")
-                        else if (selectedItemIndex == 3)
-                            Text(text = "About")
+
                     }
                 }
             }

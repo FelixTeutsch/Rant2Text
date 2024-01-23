@@ -49,6 +49,7 @@ class RantActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
 
+
             var canRecord by remember {
                 mutableStateOf(false)
             }

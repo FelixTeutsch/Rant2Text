@@ -273,7 +273,8 @@ fun CreateRantModal(
                                                 id = rant.id
                                             )
                                         )
-                                        if (settings?.openRantOnCreate == true)
+
+                                        if (settings?.openRantOnEdit == true)
                                             openRantChat(rant.id)
                                     }
                                 } else {

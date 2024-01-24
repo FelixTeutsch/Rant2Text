@@ -153,6 +153,15 @@ fun SettingsContent(
             }
             SettingsGroup(title = "Extra") {
                 SettingsItemFirebaseID(context = LocalContext.current)
+
+                SettingsItemTextCopy(
+                    title = "App Version",
+                    textToCopy = LocalContext.current.packageManager.getPackageInfo(
+                        LocalContext.current.packageName,
+                        0
+                    ).versionName,
+                    context = LocalContext.current
+                )
             }
         }
     }
@@ -258,6 +267,44 @@ fun SettingsItemSlider(
     }
 }
 
+@Composable
+fun SettingsItemTextCopy(title: String, textToCopy: String, context: Context) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(text = title, style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = textToCopy, // Display Firebase ID
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Icon(
+            imageVector = Icons.Rounded.ContentCopy,
+            contentDescription = "Copy $title",
+            modifier = Modifier
+                .padding(16.dp)
+                .clickable {
+                    // Copy Firebase ID to clipboard
+                    val clipboard =
+                        context.getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip =
+                        android.content.ClipData.newPlainText(title, textToCopy)
+                    clipboard.setPrimaryClip(clip)
+                }
+        )
+    }
+
+}
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun SettingsItemFirebaseID(context: Context) {
@@ -280,37 +327,9 @@ fun SettingsItemFirebaseID(context: Context) {
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(text = "Notification ID", style = MaterialTheme.typography.labelLarge)
-            Text(
-                text = firebaseIdState.value, // Display Firebase ID
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-        Icon(
-            imageVector = Icons.Rounded.ContentCopy,
-            contentDescription = "Copy Firebase ID",
-            modifier = Modifier
-                .padding(16.dp)
-                .clickable {
-                    // Copy Firebase ID to clipboard
-                    val clipboard =
-                        context.getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                    val clip =
-                        android.content.ClipData.newPlainText("Firebase ID", firebaseIdState.value)
-                    clipboard.setPrimaryClip(clip)
-                }
-        )
-    }
+    SettingsItemTextCopy(
+        title = "Firebase ID",
+        textToCopy = firebaseIdState.value,
+        context = context
+    )
 }

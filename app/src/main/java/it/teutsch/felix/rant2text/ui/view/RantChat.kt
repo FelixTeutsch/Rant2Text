@@ -35,7 +35,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Delete
@@ -107,19 +107,15 @@ fun RantChatView(
     Column(
         modifier = Modifier
             .fillMaxSize(),
-//        verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.End
     ) {
         topBarSection(
             title = state.value.rant.title,
             closeChatIntent,
             color = state.value.angerLevel.angerColor,
-            state.value.rant
         )
-//        chatSection(state.value.text)
-//        messageOptions()
+
         chatSection(
-            messageText = state.value.rant.text,
             modifier = Modifier.weight(0.9f),
             state.value.rant,
             rantChatModel,
@@ -139,7 +135,6 @@ fun RantChatView(
 
 @Composable
 fun chatSection(
-    messageText: String,
     modifier: Modifier,
     rant: RantTableModel,
     rantChatModel: RantChatModel,
@@ -203,6 +198,7 @@ fun messageItem(
             Box(
                 modifier = Modifier
                     .background(
+                        //TEXT BOX COLOR IS HERE
                         MaterialTheme.colorScheme.primary,
                         shape = userChatBubble
                     )
@@ -271,7 +267,6 @@ fun messageItem(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            // Title
                             Text(
                                 text = "Edit Message",
                                 style = MaterialTheme.typography.headlineMedium,
@@ -298,8 +293,6 @@ fun messageItem(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
 
-
-                            // Your TextField with the message
                             var messageText by remember { mutableStateOf(TextFieldValue(text.text)) }
                             val oldText = text.text
                             OutlinedTextField(
@@ -314,7 +307,6 @@ fun messageItem(
                                 )
                             )
 
-                            // Buttons (Cancel and Confirm)
                             ModalButtons(
                                 confirmLabel = "Confirm",
                                 confirmColor = MaterialTheme.colorScheme.primaryContainer,
@@ -354,6 +346,7 @@ fun messageOptions(
     }
 
 
+    //ICON displays here!!
     val iconDisplay: Painter =
         if (typedMsg.text.isEmpty()) {
             if (!voiceRecState.value.isSpeaking) {
@@ -457,7 +450,6 @@ fun topBarSection(
     title: String,
     closeChatIntent: () -> Unit,
     color: Color,
-    rantTable: RantTableModel
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -465,6 +457,7 @@ fun topBarSection(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp),
+        //TOPBAR color here
         colors = CardDefaults.cardColors(color.copy(alpha = 0.8F)),
         shape = RectangleShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -481,11 +474,11 @@ fun topBarSection(
                     .size(60.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.Default.ArrowBackIosNew,
                     contentDescription = "Back to Rant list view Icon button",
                     tint = Color.White,
                     modifier = Modifier
-                        .size(70.dp)
+                        .size(45.dp)
                         .padding(10.dp)
                 )
             }

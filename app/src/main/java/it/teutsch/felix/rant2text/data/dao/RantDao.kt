@@ -25,4 +25,11 @@ interface RantDao {
 
     @Query("SELECT * FROM rants WHERE id=(:rantId)")
     fun getRantById(rantId: Int): Flow<RantTableModel>
+
+    @Query("SELECT * FROM rants ORDER BY charCount DESC LIMIT 1")
+    fun getRantWithMostChars(): Flow<RantTableModel>
+
+    @Query("SELECT * FROM rants ORDER BY charCount ASC LIMIT 1")
+    fun getRantWithLeastChars(): Flow<RantTableModel>
+
 }

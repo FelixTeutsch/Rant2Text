@@ -1,5 +1,8 @@
 package it.teutsch.felix.rant2text.ui.view
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Context.CLIPBOARD_SERVICE
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,14 +26,22 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.ui.enumeration.EAngerLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,6 +151,9 @@ fun SettingsContent(
                     }
                 )
             }
+            SettingsGroup(title = "Extra") {
+                SettingsItemFirebaseID(context = LocalContext.current)
+            }
         }
     }
 }
@@ -239,6 +254,63 @@ fun SettingsItemSlider(
         Text(
             text = settings.defaultAngerLevel.angerName,
             color = settings.defaultAngerLevel.angerColor
+        )
+    }
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun SettingsItemFirebaseID(context: Context) {
+    // Create a coroutine scope
+    val coroutineScope = rememberCoroutineScope()
+
+    // Create a MutableState to hold the Firebase ID
+    val firebaseIdState = remember { mutableStateOf("") }
+
+    // Launch a coroutine to retrieve the Firebase ID
+    coroutineScope.launch {
+        try {
+            // Use the FCM library to get the token
+            val firebaseId = Firebase.messaging.token.await()
+            // Update the state with the obtained Firebase ID
+            firebaseIdState.value = firebaseId
+        } catch (e: Exception) {
+            // Handle exceptions, if any
+            e.printStackTrace()
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(text = "Notification ID", style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = firebaseIdState.value, // Display Firebase ID
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Icon(
+            imageVector = Icons.Rounded.ContentCopy,
+            contentDescription = "Copy Firebase ID",
+            modifier = Modifier
+                .padding(16.dp)
+                .clickable {
+                    // Copy Firebase ID to clipboard
+                    val clipboard =
+                        context.getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip =
+                        android.content.ClipData.newPlainText("Firebase ID", firebaseIdState.value)
+                    clipboard.setPrimaryClip(clip)
+                }
         )
     }
 }

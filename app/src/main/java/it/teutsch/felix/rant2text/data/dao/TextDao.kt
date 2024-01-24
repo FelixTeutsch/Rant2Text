@@ -23,4 +23,7 @@ interface TextDao {
 
     @Query("SELECT * FROM texts WHERE rantId = :rantId ORDER BY textId DESC")
     fun getTextsByRantId(rantId: Int): Flow<List<TextTableModel>>
+
+    @Query("SELECT * FROM texts WHERE rantId = :rantId ORDER BY textId DESC LIMIT 2")
+    suspend fun getLastTwoMessagesByRantId(rantId: Int): List<TextTableModel>?
 }

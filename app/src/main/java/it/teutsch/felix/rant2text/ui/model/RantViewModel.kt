@@ -7,6 +7,7 @@ import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.enumeration.EDialog
 import it.teutsch.felix.rant2text.ui.state.RantViewState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -93,4 +94,14 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
             it.copy(searchText = searchText)
         }
     }
+
+    fun getMostCharsRant(): Flow<RantTableModel> {
+        return dao.getRantWithMostChars()
+    }
+
+    fun getLeastCharsRant(): Flow<RantTableModel> {
+        return dao.getRantWithLeastChars()
+    }
+
+
 }

@@ -121,7 +121,7 @@ fun RantChatView(
         chatSection(
             messageText = state.value.rant.text,
             modifier = Modifier.weight(0.9f),
-            rantId,
+            state.value.rant,
             rantChatModel,
             state.value.texts,
             settings
@@ -130,7 +130,6 @@ fun RantChatView(
         messageOptions(
             modifier = Modifier.weight(0.12f),
             state.value.rant,
-            rantId,
             rantChatModel,
             voiceToTextParser
         )
@@ -142,12 +141,12 @@ fun RantChatView(
 fun chatSection(
     messageText: String,
     modifier: Modifier,
-    rantId: Int,
+    rant: RantTableModel,
     rantChatModel: RantChatModel,
     texts: List<TextTableModel>,
     settings: SettingsData
 ) {
-    rantChatModel.getTextMsgs(rantId)
+    rantChatModel.getTextMsgs(rant.id)
     Log.d("msgsDb", "retrieved msgs are: ${texts.size}")
 
     LazyColumn(
@@ -160,7 +159,7 @@ fun chatSection(
         reverseLayout = true,
     ) {
         items(texts.size) { index ->
-            messageItem(texts[index], rantChatModel, settings)
+            messageItem(texts[index], rantChatModel, settings, rant)
         }
     }
 
@@ -174,22 +173,17 @@ private val userChatBubble = RoundedCornerShape(10.dp, 10.dp, 0.dp, 10.dp)
     ExperimentalMaterialApi::class
 )
 @Composable
-fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: SettingsData) {
+fun messageItem(
+    text: TextTableModel,
+    rantChatModel: RantChatModel,
+    settings: SettingsData,
+    rant: RantTableModel
+) {
     val sdf = SimpleDateFormat("dd MMM yyyy 'at' HH:mm", Locale.getDefault())
     val formattedDate = sdf.format(Date(text.date))
     var isTimeVisible by remember { mutableStateOf(settings.showTimeStampsForMessages) }
     var isDialogOpen by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf(TextFieldValue(text.text)) }
-
-//    val dismissState = rememberDismissState(
-//        confirmStateChange = {
-//            if (it == DismissValue.DismissedToEnd) {
-//                // Handle the swipe-to-dismiss action here
-//                Log.d("Swipe", "Message swiped!")
-//            }
-//            true
-//        }
-//    )
 
     Column(
         modifier = Modifier
@@ -287,7 +281,7 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: Se
 
                             IconButton(
                                 onClick = {
-                                    rantChatModel.deleteTextMsg(text)
+                                    rantChatModel.deleteTextMsg(rant, text)
                                     isDialogOpen = false
                                 },
                             ) {
@@ -307,6 +301,7 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: Se
 
                             // Your TextField with the message
                             var messageText by remember { mutableStateOf(TextFieldValue(text.text)) }
+                            val oldText = text.text
                             OutlinedTextField(
                                 value = messageText,
                                 onValueChange = { messageText = it },
@@ -327,7 +322,7 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: Se
                                 cancelLabel = "Cancel",
                                 onConfirm = {
                                     text.text = messageText.text
-                                    rantChatModel.updatetextMsg(text)
+                                    rantChatModel.updateTextMsg(rant, oldText, text)
                                     isDialogOpen = false
                                 },
                                 onCancel = { isDialogOpen = false }
@@ -345,14 +340,11 @@ fun messageItem(text: TextTableModel, rantChatModel: RantChatModel, settings: Se
 fun messageOptions(
     modifier: Modifier,
     rant: RantTableModel,
-    rantId: Int,
     rantChatModel: RantChatModel,
     voiceToTextParser: VoicetoTextParser
 ) {
     val voiceRecState = voiceToTextParser.state.collectAsState()
-//    val _voiceRecState = MutableStateFlow(VoiceToTextParserState())
-//    val voiceRecState = _voiceRecState.collectAsState()
-
+    Log.d("rantShow", "big rant rant is: $rant")
     val context = LocalContext.current
 
     var typedMsg by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -401,7 +393,7 @@ fun messageOptions(
                     .padding(horizontal = 5.dp, vertical = 10.dp)
                     .background(
                         color = Color.LightGray,
-                        shape = RoundedCornerShape(25.dp) // Set the same shape for the background
+                        shape = RoundedCornerShape(25.dp)
                     )
                     .align(Alignment.CenterVertically),
 
@@ -419,32 +411,17 @@ fun messageOptions(
                                         voiceToTextParser.startListening()
                                     }
                                 } else {
-                                    //Log.d("personal", "rant is: $rant")
                                     rant.text = typedMsg.text
-                                    Log.d(
-                                        "rant",
-                                        "rant id is: ${rant.id} when i click the send icon"
-                                    )
-
-                                    rantChatModel.saveTextMsg(
-                                        TextTableModel(
-                                            rantId = rantId,
-                                            text = typedMsg.text
-                                        )
-                                    )
-//                                    rantChatModel.saveRantMsg(rant)
+                                    saveTextMsg(rantChatModel, rant, typedMsg.text)
+                                    rantChatModel.saveRantMsg(rant)
                                     typedMsg = TextFieldValue("")
                                 }
-
                             }
                             .fillMaxHeight()
                             .fillMaxHeight()
-
                     )
                 },
-
-
-                )
+            )
 
             LaunchedEffect(voiceRecState.value.spokenText) {
                 if (voiceRecState.value.spokenText.isNotEmpty()) {
@@ -453,18 +430,26 @@ fun messageOptions(
                         "msgsDb",
                         "rant id is: ${rant} when i send a voice msg using the mic icon: "
                     )
-                    rantChatModel.saveTextMsg(
-                        TextTableModel(
-                            rantId = rantId,
-                            text = voiceRecState.value.spokenText
-                        )
-                    )
+
+                    saveTextMsg(rantChatModel, rant, voiceRecState.value.spokenText)
                     rantChatModel.saveRantMsg(rant)
                 }
             }
         }
 
     }
+}
+
+fun saveTextMsg(rantChatModel: RantChatModel, rant: RantTableModel, text: String) {
+
+    Log.d("testRant", "rant is: $rant")
+    rantChatModel.saveTextMsg(
+        rant,
+        TextTableModel(
+            rantId = rant.id,
+            text = text
+        )
+    )
 }
 
 @Composable

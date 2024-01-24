@@ -13,15 +13,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RantChatModel(private val rantdao: RantDao, private val textDao: TextDao) : ViewModel() {
+class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) : ViewModel() {
     private val _rantChatState = MutableStateFlow(RantChatState("", "", RantTableModel()))
     val rantChatState = _rantChatState.asStateFlow()
 
     fun getRantById(rantId: Int) {
         viewModelScope.launch {
-            rantdao.getRantById(rantId).collect { rant ->
-                Log.d("personalErr", "there is an err with the rant: $rant")
-//                Log.d("database", "the rant isv ${rant.title}")
+            rantDao.getRantById(rantId).collect { rant ->
                 if (rant != null) {
                     _rantChatState.update {
                         it.copy(
@@ -43,20 +41,14 @@ class RantChatModel(private val rantdao: RantDao, private val textDao: TextDao) 
         _rantChatState.update { it.copy(rant = rantMsg) }
         Log.d("Personal", "${rantChatState.value.rant}")
         viewModelScope.launch {
-            rantdao.updateRant(rantChatState.value.rant)
+            rantDao.updateRant(rantChatState.value.rant)
         }
     }
 
-    fun saveTextMsg(textMsg: TextTableModel) {
-        viewModelScope.launch {
-            textDao.insertText(textMsg)
-        }
-    }
 
     fun getTextMsgs(rantId: Int) {
         viewModelScope.launch {
             textDao.getTextsByRantId(rantId).collect { texts ->
-                Log.d("personalErr", "there is an err with the texts: $texts")
                 if (texts != null) {
                     _rantChatState.update { it.copy(texts = texts) }
                 } else {
@@ -66,16 +58,52 @@ class RantChatModel(private val rantdao: RantDao, private val textDao: TextDao) 
         }
     }
 
-    fun updatetextMsg(textMsg: TextTableModel) {
+    fun saveTextMsg(rant: RantTableModel, text: TextTableModel) {
         viewModelScope.launch {
-            textDao.updateText(textMsg)
+            // Update the wordCount and charCount of the rant object
+            rant.wordCount += text.text.split("\\s+".toRegex()).size
+            rant.charCount += text.text.length
+            rantDao.updateRant(rant)
+
+            // Save the message
+            textDao.insertText(text)
         }
     }
 
-    fun deleteTextMsg(textMsg: TextTableModel) {
+    fun updateTextMsg(rant: RantTableModel, oldText: String, newText: TextTableModel) {
         viewModelScope.launch {
-            textDao.deleteText(textMsg)
+            // Update the wordCount and charCount of the rant object
+            rant.wordCount -= oldText.split("\\s+".toRegex()).size
+            rant.charCount -= oldText.length
+            rant.wordCount += newText.text.split("\\s+".toRegex()).size
+            rant.charCount += newText.text.length
+
+            rant.text = newText.text
+            rantDao.updateRant(rant)
+
+
+            textDao.updateText(newText)
         }
     }
+
+    fun deleteTextMsg(rant: RantTableModel, text: TextTableModel) {
+        viewModelScope.launch {
+            // Update the wordCount and charCount of the rant object
+            rant.wordCount -= text.text.split("\\s+".toRegex()).size
+            rant.charCount -= text.text.length
+
+
+            val lastTwoMessages = textDao.getLastTwoMessagesByRantId(rant.id)
+
+            if (lastTwoMessages?.firstOrNull()?.textId == text.textId) {
+                rant.text = lastTwoMessages.getOrNull(1)?.text ?: ""
+            }
+            rantDao.updateRant(rant)
+
+            // Delete the message
+            textDao.deleteText(text)
+        }
+    }
+
 
 }

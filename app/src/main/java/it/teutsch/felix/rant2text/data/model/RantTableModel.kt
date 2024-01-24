@@ -11,6 +11,8 @@ data class RantTableModel(
     var text: String = "",
     var angerLevel: EAngerLevel = EAngerLevel.None,
     val date: Long = System.currentTimeMillis(),
+    var wordCount: Int = 0,
+    var charCount: Int = 0,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 )

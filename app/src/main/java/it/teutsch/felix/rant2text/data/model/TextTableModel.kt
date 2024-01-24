@@ -21,6 +21,5 @@ data class TextTableModel(
     val textId: Int = 0,
     val rantId: Int,
     var text: String = "",
-    val date: Long = System.currentTimeMillis()
-
+    val date: Long = System.currentTimeMillis(),
 )

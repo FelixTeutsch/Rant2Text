@@ -1,8 +1,13 @@
 package it.teutsch.felix.rant2text
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -43,10 +48,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.ktx.messaging
 import it.teutsch.felix.rant2text.data.RantDatabase
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.serializer.SettingsSerializer
@@ -55,6 +65,7 @@ import it.teutsch.felix.rant2text.ui.theme.Rant2TextTheme
 import it.teutsch.felix.rant2text.ui.view.RantListView
 import it.teutsch.felix.rant2text.ui.view.StatisticView
 import kotlinx.coroutines.launch
+
 
 val Context.dataStore by dataStore("app-settings.json", serializer = SettingsSerializer)
 
@@ -82,8 +93,24 @@ class MainActivity : ComponentActivity() {
         }
     )
 
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        // Setup Push Notifications
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            Log.d("FCM", "Token: $token")
+        }
+
         super.onCreate(savedInstanceState)
+        // Check for Notification Permission
+        requestNotificationPermission()
         setContent {
             Rant2TextTheme {
                 // A surface container using the 'background' color from the theme
@@ -120,6 +147,11 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     var selectedItemIndex by rememberSaveable { mutableStateOf(0) }
+
+                    // Subscribe to Notifications
+                    scope.launch {
+                        Firebase.messaging.subscribeToTopic("rantNotifications")
+                    }
 
                     ModalNavigationDrawer(
                         drawerContent = {
@@ -271,5 +303,23 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         rantViewModel.getRants()
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasPermission) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    0
+                )
+            }
+
+        }
     }
 }

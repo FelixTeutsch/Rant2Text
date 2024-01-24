@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
+
+    // Push Notifications
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -52,7 +55,7 @@ android {
 }
 
 dependencies {
-    
+
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -92,4 +95,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
+    // Push Notifications
+    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+
+    implementation("com.google.firebase:firebase-messaging")
 }

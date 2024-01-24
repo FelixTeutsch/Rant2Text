@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1034443890990",
+    "project_id": "rant2text",
+    "storage_bucket": "rant2text.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1034443890990:android:944d62b41a54077726dabf",
+        "android_client_info": {
+          "package_name": "it.teutsch.felix.rant2text"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDduUyco6_OQmtLyGsT4Or97yxbrYHivi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

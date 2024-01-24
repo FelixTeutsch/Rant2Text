@@ -42,7 +42,8 @@
             android:name=".RantActivity"
             android:exported="false"
             android:label="@string/title_activity_rant"
-            android:theme="@style/Theme.rant2text" />
+            android:theme="@style/Theme.rant2text"
+            android:windowSoftInputMode="adjustResize" />
 
         <service
             android:name=".pushNotifications.PushNotificationService"

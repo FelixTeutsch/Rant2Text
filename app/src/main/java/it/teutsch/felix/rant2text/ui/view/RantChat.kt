@@ -1,31 +1,40 @@
 package it.teutsch.felix.rant2text.ui.view
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -39,13 +48,17 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,22 +67,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.data.model.TextTableModel
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
+import it.teutsch.felix.rant2text.ui.state.VoiceToTextParserState
 import it.teutsch.felix.rant2text.ui.voiceToText.VoicetoTextParser
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -83,81 +96,63 @@ fun RantChatView(
     settings: SettingsData,
     closeChatIntent: () -> Unit
 ) {
-    val state = rantChatModel.rantChatState.collectAsState()
-
-//
-//    val ranty: RantTableModel = RantTableModel(
-//        title = "life in general",
-//        text = "i am about to yap about my life now for 400 words"
-//    )
-//    Log.d("intent", "$ranty")
-//
-//    rantChatModel.insertRant(ranty)
+    val state by rantChatModel.rantChatState.collectAsState()
 
     try {
         rantChatModel.getRantById(rantId)
     } catch (e: Exception) {
-        Log.d("err", "err is $e")
-
+        // Handle the exception if needed
     }
 
-    Log.d("dbwork", "state is ${state.value.rant.title}")
-    Log.d("personal", "color is ${state.value.angerLevel.angerColor}")
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.End
-    ) {
-        topBarSection(
-            title = state.value.rant.title,
-            closeChatIntent,
-            color = state.value.angerLevel.angerColor,
-        )
-
-        chatSection(
-            modifier = Modifier.weight(0.9f),
-            state.value.rant,
-            rantChatModel,
-            state.value.texts,
-            settings
-        )
-        Log.d("rant", "rant is: ${state.value.rant}")
-        messageOptions(
-            modifier = Modifier.weight(0.12f),
-            state.value.rant,
-            rantChatModel,
-            voiceToTextParser
-        )
-
-    }
+    Scaffold(
+        topBar = {
+            topBarSection(
+                title = state.rant.title,
+                closeChatIntent,
+                color = state.angerLevel.angerColor,
+            )
+        },
+        content = {
+            chatSection(
+                state.rant,
+                rantChatModel,
+                state.texts,
+                settings,
+                it,
+            )
+        },
+        bottomBar = {
+            messageOptions(
+                rant = state.rant,
+                rantChatModel = rantChatModel,
+                voiceToTextParser = voiceToTextParser
+            )
+        }
+        // Not making use of bottom bar for style reasons
+    )
 }
 
 @Composable
 fun chatSection(
-    modifier: Modifier,
     rant: RantTableModel,
     rantChatModel: RantChatModel,
     texts: List<TextTableModel>,
-    settings: SettingsData
+    settings: SettingsData,
+    innerPadding: PaddingValues,
 ) {
     rantChatModel.getTextMsgs(rant.id)
-    Log.d("msgsDb", "retrieved msgs are: ${texts.size}")
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(fraction = 0.8F)
-            .padding(16.dp)
-            .then(modifier),
-        //so that the msgs dont stack upawards but instead get reversed
+            .padding(innerPadding)
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
         reverseLayout = true,
     ) {
-        items(texts.size) { index ->
-            messageItem(texts[index], rantChatModel, settings, rant)
+        items(texts) {
+            messageItem(it, rantChatModel, settings, rant)
         }
     }
-
 }
 
 private val userChatBubble = RoundedCornerShape(10.dp, 10.dp, 0.dp, 10.dp)
@@ -188,8 +183,10 @@ fun messageItem(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = { isTimeVisible = !isTimeVisible },
                 onLongClick = {
-                    isDialogOpen = true
-                    editText = TextFieldValue(text.text)
+                    if (settings.editRantMessages) {
+                        isDialogOpen = true
+                        editText = TextFieldValue(text.text)
+                    }
                 }),
 
         horizontalAlignment = Alignment.End
@@ -330,14 +327,11 @@ fun messageItem(
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun messageOptions(
-    modifier: Modifier,
     rant: RantTableModel,
     rantChatModel: RantChatModel,
     voiceToTextParser: VoicetoTextParser
 ) {
     val voiceRecState = voiceToTextParser.state.collectAsState()
-    Log.d("rantShow", "big rant rant is: $rant")
-    val context = LocalContext.current
 
     var typedMsg by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -346,96 +340,186 @@ fun messageOptions(
     }
 
 
-    //ICON displays here!!
-    val iconDisplay: Painter =
-        if (typedMsg.text.isEmpty()) {
-            if (!voiceRecState.value.isSpeaking) {
-                painterResource(id = R.drawable.baseline_mic_24)
-            } else {
-                painterResource(id = R.drawable.baseline_stop_24)
-            }
-        } else {
-            painterResource(R.drawable.baseline_send_24)
-        }
+    // Define the icon to display based on the state of the text field
+    val iconDisplay: ImageVector =
+        if (typedMsg.text.isEmpty())
+            if (!voiceRecState.value.isSpeaking)
+                Icons.Rounded.Mic
+            else
+                Icons.Rounded.Send // TODO: add animation to icon!
+        else
+            Icons.Rounded.Send
 
 
-    Card(
+
+
+
+    OutlinedTextField(
+        placeholder = { Text(text = "Start Ranting...", textAlign = TextAlign.Center) },
+        value = typedMsg,
+        readOnly = voiceRecState.value.isSpeaking,
+        onValueChange = {
+            typedMsg = it
+        },
+        maxLines = 4,
         modifier = Modifier
+            .padding(16.dp)
             .fillMaxWidth()
-            .then(modifier),
-        colors = CardDefaults.cardColors(Color.Transparent)
+            .background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(25.dp)
+            ),
+        trailingIcon = {
 
-//        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-    ) {
+            PulsatingCircles(
+                iconDisplay = iconDisplay,
+                typedMsg = typedMsg,
+                rantChatModel = rantChatModel,
+                rant = rant,
+                voiceToTextParser = voiceToTextParser,
+                voiceRecState = voiceRecState
+            )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-        ) {
-
-            OutlinedTextField(
-                placeholder = { Text(text = "Type Message...", textAlign = TextAlign.Center) },
-                value = typedMsg,
-                onValueChange = { newText ->
-                    typedMsg = newText
-                },
-                shape = RoundedCornerShape(25.dp),
+            Icon(
+                imageVector = iconDisplay,
+                contentDescription = "Send message button",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(horizontal = 5.dp, vertical = 10.dp)
-                    .background(
-                        color = Color.LightGray,
-                        shape = RoundedCornerShape(25.dp)
-                    )
-                    .align(Alignment.CenterVertically),
+                    .clickable {
+                        // Change of mic icon to send icon and back
+                        if (typedMsg.text.isEmpty())
+                            if (voiceRecState.value.isSpeaking)
+                                voiceToTextParser.stopListening()
+                            else
+                                voiceToTextParser.startListening()
+                        else {
+                            rant.text = typedMsg.text
+                            saveTextMsg(rantChatModel, rant, typedMsg.text)
+                            rantChatModel.saveRantMsg(rant)
+                            typedMsg = TextFieldValue("")
+                        }
+                    }
+            )
+        },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            textColor = MaterialTheme.colorScheme.onPrimary,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            backgroundColor = Color.Transparent,
+            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            placeholderColor = MaterialTheme.colorScheme.onPrimary,
+            trailingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+    )
 
-                trailingIcon = {
+    LaunchedEffect(voiceRecState.value.spokenText) {
+        if (voiceRecState.value.spokenText.isNotEmpty()) {
+            rant.text = voiceRecState.value.spokenText
+            saveTextMsg(rantChatModel, rant, voiceRecState.value.spokenText)
+            rantChatModel.saveRantMsg(rant)
+        }
+    }
+}
+
+// TODO: fix this animation
+@Composable
+fun PulsatingCircles(
+    iconDisplay: ImageVector,
+    typedMsg: TextFieldValue,
+    rantChatModel: RantChatModel,
+    rant: RantTableModel,
+    voiceToTextParser: VoicetoTextParser,
+    voiceRecState: State<VoiceToTextParserState>,
+) {
+    Column {
+        val infiniteTransition = rememberInfiniteTransition()
+        val size by infiniteTransition.animateValue(
+            initialValue = 200.dp,
+            targetValue = 190.dp,
+            Dp.VectorConverter,
+            animationSpec = infiniteRepeatable(
+                animation = tween(500, easing = FastOutLinearInEasing),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+        val smallCircle by infiniteTransition.animateValue(
+            initialValue = 150.dp,
+            targetValue = 160.dp,
+            Dp.VectorConverter,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000, easing = FastOutLinearInEasing),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            SimpleCircleShape2(
+                size = size,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+            )
+            SimpleCircleShape2(
+                size = smallCircle,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+            )
+            SimpleCircleShape2(
+                size = 130.dp,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        painter = iconDisplay,
+                        imageVector = iconDisplay,
                         contentDescription = "Send message button",
                         modifier = Modifier
                             .clickable {
-                                if (typedMsg.text.isEmpty()) {
-                                    //mic icon code
-                                    if (voiceRecState.value.isSpeaking) {
+                                // Change of mic icon to send icon and back
+                                if (typedMsg.text.isEmpty())
+                                    if (voiceRecState.value.isSpeaking)
                                         voiceToTextParser.stopListening()
-                                    } else {
+                                    else
                                         voiceToTextParser.startListening()
-                                    }
-                                } else {
+                                else {
                                     rant.text = typedMsg.text
                                     saveTextMsg(rantChatModel, rant, typedMsg.text)
                                     rantChatModel.saveRantMsg(rant)
-                                    typedMsg = TextFieldValue("")
+                                    // TODDO: fix this!
+                                    //typedMsg = TextFieldValue("")
                                 }
                             }
-                            .fillMaxHeight()
-                            .fillMaxHeight()
                     )
-                },
-            )
-
-            LaunchedEffect(voiceRecState.value.spokenText) {
-                if (voiceRecState.value.spokenText.isNotEmpty()) {
-                    rant.text = voiceRecState.value.spokenText
-                    Log.d(
-                        "msgsDb",
-                        "rant id is: ${rant} when i send a voice msg using the mic icon: "
-                    )
-
-                    saveTextMsg(rantChatModel, rant, voiceRecState.value.spokenText)
-                    rantChatModel.saveRantMsg(rant)
                 }
             }
         }
+    }
+}
 
+@Composable
+fun SimpleCircleShape2(
+    size: Dp,
+    color: Color = Color.White,
+    borderWidth: Dp = 0.dp,
+    borderColor: Color = Color.LightGray.copy(alpha = 0.0f)
+) {
+    Column(
+        modifier = Modifier
+            .wrapContentSize(Alignment.Center)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(
+                    color
+                )
+                .border(borderWidth, borderColor)
+        )
     }
 }
 
 fun saveTextMsg(rantChatModel: RantChatModel, rant: RantTableModel, text: String) {
-
-    Log.d("testRant", "rant is: $rant")
     rantChatModel.saveTextMsg(
         rant,
         TextTableModel(

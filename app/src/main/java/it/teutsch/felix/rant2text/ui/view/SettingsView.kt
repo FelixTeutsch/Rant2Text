@@ -90,7 +90,7 @@ fun SettingsContent(
         contentPadding = PaddingValues(16.dp)
     ) {
         item {
-            SettingsGroup(title = "Rants") {
+            SettingsGroup(title = "Rant Overview") {
                 SettingsItemSwitch(
                     title = "Open Rant on Create",
                     description = "Immediately open Rant Chat when creating a new Rant",
@@ -126,11 +126,11 @@ fun SettingsContent(
                 SettingsItemSwitch(
                     title = "Confirm before deleting",
                     description = "Open Confirm Modal before deleting a Rant",
-                    checked = settings.confirmBeforeDelete,
+                    checked = settings.confirmBeforeDeleteRantList,
                     onSwitchChange = {
                         scope.launch {
                             dataStore.updateData { currentSettings ->
-                                currentSettings.copy(confirmBeforeDelete = it)
+                                currentSettings.copy(confirmBeforeDeleteRantList = it)
                             }
                         }
                     }
@@ -150,10 +150,34 @@ fun SettingsContent(
                         }
                     }
                 )
-            }
-            SettingsGroup(title = "Extra") {
-                SettingsItemFirebaseID(context = LocalContext.current)
 
+                SettingsItemSwitch(
+                    title = "Make messages Editable",
+                    description = "Allow editing and deleting of Rant Messages",
+                    checked = settings.editRantMessages,
+                    onSwitchChange = {
+                        scope.launch {
+                            dataStore.updateData { currentSettings ->
+                                currentSettings.copy(editRantMessages = it)
+                            }
+                        }
+                    }
+                )
+
+                SettingsItemSwitch(
+                    title = "Confirm before deleting a message",
+                    description = "Open Confirm Modal before deleting a Rant Message",
+                    checked = settings.confirmBeforeDeleteRantMessage,
+                    onSwitchChange = {
+                        scope.launch {
+                            dataStore.updateData { currentSettings ->
+                                currentSettings.copy(confirmBeforeDeleteRantMessage = it)
+                            }
+                        }
+                    }
+                )
+            }
+            SettingsGroup(title = "About Rant2Text") {
                 SettingsItemTextCopy(
                     title = "App Version",
                     textToCopy = LocalContext.current.packageManager.getPackageInfo(
@@ -162,6 +186,8 @@ fun SettingsContent(
                     ).versionName,
                     context = LocalContext.current
                 )
+
+                SettingsItemFirebaseID(context = LocalContext.current)
             }
         }
     }
@@ -328,7 +354,7 @@ fun SettingsItemFirebaseID(context: Context) {
     }
 
     SettingsItemTextCopy(
-        title = "Firebase ID",
+        title = "Notification Token",
         textToCopy = firebaseIdState.value,
         context = context
     )

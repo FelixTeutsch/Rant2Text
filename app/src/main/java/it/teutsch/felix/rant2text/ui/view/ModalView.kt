@@ -209,7 +209,7 @@ fun CreateRantModal(
                             if (isEditMode) {
                                 IconButton(
                                     onClick = {
-                                        if (settings == null || settings.confirmBeforeDelete) rantViewModel.clickDeleteRant(
+                                        if (settings == null || settings.confirmBeforeDeleteRantList) rantViewModel.clickDeleteRant(
                                             rant
                                         ) else rantViewModel.deleteRant(rant)
                                     },

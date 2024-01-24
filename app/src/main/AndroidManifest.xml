@@ -42,4 +42,9 @@
             android:theme="@style/Theme.rant2text" />
     </application>
 
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 </manifest>

@@ -195,9 +195,6 @@ class MainActivity : ComponentActivity() {
                                             label = { Text(text = item.title) },
                                             selected = false,
                                             onClick = {
-                                                scope.launch {
-                                                    drawerState.close()
-                                                }
                                                 if (index == 0) {
                                                     startActivity(
                                                         Intent(
@@ -207,12 +204,15 @@ class MainActivity : ComponentActivity() {
                                                     )
                                                 } else if (index == 1) {
                                                     // TODO(Create about Activity)
-//                                                    startActivity(
-//                                                        Intent(
-//                                                            this@MainActivity,
-//                                                            AboutActivity::class.java
-//                                                        )
-//                                                    )
+                                                    startActivity(
+                                                        Intent(
+                                                            this@MainActivity,
+                                                            AboutActivity::class.java
+                                                        )
+                                                    )
+                                                }
+                                                scope.launch {
+                                                    drawerState.close()
                                                 }
                                             },
                                             icon = {

@@ -3,12 +3,12 @@ package it.teutsch.felix.rant2text.ui.enumeration
 import androidx.compose.ui.graphics.Color
 
 enum class EAngerLevel(val angerLevel: Int, val angerColor: Color, val angerName: String) {
-    None(0, Color(0xFF1BCE48), "Quite Chill"),
-    Low(1, Color(0xFF71DB44), "It's Ok"),
-    MediumLow(2, Color(0xFFBBDB44), "Mad"),
-    Medium(3, Color(0xFFF7E379), "Big Mad"),
-    MediumHigh(4, Color(0xFFF2A134), "Furious"),
-    High(5, Color(0xFFE51F1F), "Burn it to the ground")
+    None(0, Color(0xFF64DD17), "Quite Chill"),
+    Low(1, Color(0xFF8BC34A), "It's Ok"),
+    MediumLow(2, Color(0xFFFFC107), "Mad"),
+    Medium(3, Color(0xFFFF9800), "Big Mad"),
+    MediumHigh(4, Color(0xFFFF5722), "Furious"),
+    High(5, Color(0xFFD32F2F), "Burn it to the ground")
     ;
 
     companion object {

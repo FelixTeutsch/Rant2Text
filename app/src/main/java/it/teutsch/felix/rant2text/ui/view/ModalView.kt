@@ -233,8 +233,14 @@ fun CreateRantModal(
                             modifier = Modifier.fillMaxWidth()
                         )
 
+                        if (!isEditMode && settings != null) {
+                            rant.angerLevel =
+                                EAngerLevel.fromInt(settings.defaultAngerLevel.angerLevel)
+                        }
+
                         var rantLevel by rememberSaveable { mutableStateOf(rant.angerLevel) }
                         var rantValue by rememberSaveable { mutableFloatStateOf(rant.angerLevel.angerLevel.toFloat()) }
+
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -262,6 +268,7 @@ fun CreateRantModal(
                             onConfirmColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             cancelLabel = "Cancel",
                             onConfirm = {
+                                if (rantTitle.isEmpty()) return@ModalButtons
                                 rantViewModel.dismissDialog()
                                 if (isEditMode) {
                                     coroutineScope.launch {

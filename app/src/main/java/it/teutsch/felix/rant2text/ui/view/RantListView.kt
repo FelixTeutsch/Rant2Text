@@ -504,8 +504,7 @@ fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshCl
                         Icons.Rounded.Search,
                         contentDescription = "Refresh",
                         modifier = Modifier
-                            .padding(horizontal = 32.dp, vertical = 0.dp)
-                            .clickable { onRefreshClick() },
+                            .padding(horizontal = 32.dp, vertical = 0.dp),
                     )
             }
         )

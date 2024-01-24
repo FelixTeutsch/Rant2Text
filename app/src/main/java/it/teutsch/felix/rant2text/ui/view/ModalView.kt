@@ -235,6 +235,10 @@ fun CreateRantModal(
 
                         var rantLevel by rememberSaveable { mutableStateOf(rant.angerLevel) }
                         var rantValue by rememberSaveable { mutableFloatStateOf(rant.angerLevel.angerLevel.toFloat()) }
+                        if (!isEditMode && settings != null) {
+                            rantLevel = settings.defaultAngerLevel
+                            rantValue = settings.defaultAngerLevel.angerLevel.toFloat()
+                        }
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                         ) {

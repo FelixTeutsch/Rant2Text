@@ -9,7 +9,7 @@ data class RantTableModel(
     //TODO: turn em back to vals after the chat page is settled
     var title: String = "",
     var text: String = "",
-    val angerLevel: EAngerLevel = EAngerLevel.None,
+    var angerLevel: EAngerLevel = EAngerLevel.None,
     val date: Long = System.currentTimeMillis(),
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,

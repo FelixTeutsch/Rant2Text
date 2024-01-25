@@ -130,6 +130,7 @@ fun RantChatView(
     EditRantMessageModal(rantChatModel)
     DeleteRantTextModal(rantChatModel)
     EditRantModalInner(rantChatModel, closeChat = closeChatIntent, settings = settings)
+    DeleteRantModalInner(rantChatModel, closeChatIntent)
 }
 
 @Composable

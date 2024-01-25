@@ -359,8 +359,10 @@ fun EditRantModalInner(
                                     if (settings == null || settings.confirmBeforeDeleteRantList)
                                         rantChatModel.clickDeleteRant()
                                     else {
-                                        rantChatModel.deleteRant(rant)
-                                        closeChat()
+                                        coroutineScope.launch {
+                                            rantChatModel.deleteRant(rant)
+                                            closeChat()
+                                        }
                                     }
                                 },
                                 modifier = Modifier
@@ -436,8 +438,11 @@ fun EditRantModalInner(
 
 @Composable
 fun DeleteRantModalInner(
-    rantChatModel: RantChatModel
+    rantChatModel: RantChatModel,
+    closeChat: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+
     val state = rantChatModel.rantChatState.collectAsState()
     if (state.value.dialog == EDialog.DELETE_RANT)
         Dialog(
@@ -505,7 +510,12 @@ fun DeleteRantModalInner(
                                 confirmColor = MaterialTheme.colorScheme.error,
                                 onConfirmColor = MaterialTheme.colorScheme.onError,
                                 cancelLabel = "Cancel",
-                                onConfirm = { rantChatModel.deleteRant(rant = state.value.rant) },
+                                onConfirm = {
+                                    scope.launch {
+                                        rantChatModel.deleteRant(rant = state.value.rant)
+                                        closeChat()
+                                    }
+                                },
                                 onCancel = { rantChatModel.dismissDialog() }
                             )
                         }

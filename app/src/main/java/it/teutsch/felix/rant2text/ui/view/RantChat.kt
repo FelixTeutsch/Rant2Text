@@ -127,7 +127,7 @@ fun RantChatView(
         }
         // Not making use of bottom bar for style reasons
     )
-    EditRantMessageModal(rantChatModel)
+    EditRantMessageModal(rantChatModel, settings)
     DeleteRantTextModal(rantChatModel)
     EditRantModalInner(rantChatModel, closeChat = closeChatIntent, settings = settings)
     DeleteRantModalInner(rantChatModel, closeChatIntent)

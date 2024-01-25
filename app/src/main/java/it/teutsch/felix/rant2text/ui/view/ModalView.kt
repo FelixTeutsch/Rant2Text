@@ -608,7 +608,7 @@ fun DeleteRantTextModal(rantChatModel: RantChatModel) {
 }
 
 @Composable
-fun EditRantMessageModal(rantChatModel: RantChatModel) {
+fun EditRantMessageModal(rantChatModel: RantChatModel, settings: SettingsData) {
     var state = rantChatModel.rantChatState.collectAsState()
 
     if (state.value.dialog == EDialog.EDIT_TEXT) {
@@ -648,7 +648,13 @@ fun EditRantMessageModal(rantChatModel: RantChatModel) {
 
                             IconButton(
                                 onClick = {
-                                    rantChatModel.clickDeleteRantMessage()
+                                    if (settings.confirmBeforeDeleteRantMessage)
+                                        rantChatModel.clickDeleteRantMessage()
+                                    else
+                                        rantChatModel.deleteRantMessage(
+                                            state.value.rant,
+                                            state.value.targetMessage
+                                        )
                                 },
                             ) {
                                 Icon(

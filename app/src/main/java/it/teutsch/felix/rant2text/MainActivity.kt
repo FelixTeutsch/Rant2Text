@@ -122,7 +122,6 @@ class MainActivity : ComponentActivity() {
                         NavigationItem(
                             title = "Rants",
                             icon = Icons.Rounded.Home,
-                            badgeCount = 2
                         ),
                         NavigationItem(
                             title = "Statistics",

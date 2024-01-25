@@ -103,5 +103,9 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         return dao.getRantWithLeastChars()
     }
 
+    fun getRantsOnDate(dayStart: Long, dayEnd: Long): Flow<List<RantListTableModel>> {
+        return dao.getRantsOnDate(dayStart, dayEnd)
+    }
+
 
 }

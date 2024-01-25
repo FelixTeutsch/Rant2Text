@@ -32,4 +32,7 @@ interface RantDao {
     @Query("SELECT * FROM rants ORDER BY charCount ASC LIMIT 1")
     fun getRantWithLeastChars(): Flow<RantListTableModel>
 
+    @Query("SELECT * FROM rants WHERE date BETWEEN :dayStart AND :dayEnd")
+    fun getRantsOnDate(dayStart: Long, dayEnd: Long): Flow<List<RantListTableModel>>
+
 }

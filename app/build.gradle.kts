@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
-    
+
     // Push Notifications
     id("com.google.gms.google-services")
 }
@@ -104,4 +104,11 @@ dependencies {
     //pagerIndicator
     implementation("com.google.accompanist:accompanist-pager:0.20.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.20.0")
+
+    //Date Picker
+    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.6")
+
+    implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
+    implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
 }

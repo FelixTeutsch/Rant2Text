@@ -1,6 +1,9 @@
 package it.teutsch.felix.rant2text.ui.view
 
 import android.annotation.SuppressLint
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -68,6 +72,7 @@ import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantListTableModel
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import it.teutsch.felix.rant2text.ui.state.Statistics_screens
+import it.teutsch.felix.rant2text.ui.view.Statistics.MonthlyRecap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -79,6 +84,7 @@ sealed class Screen(val route: String) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
@@ -96,6 +102,8 @@ fun StatisticView(
     val navController = rememberNavController()
 
     val selectedButtonIndex = remember { mutableIntStateOf(1) }
+
+//    var pageName = remember { mutableStateOf("") }
 
     val rantsArray = remember {
         arrayOf(
@@ -129,17 +137,32 @@ fun StatisticView(
             }
         }
     }
-    val pagerState = rememberPagerState(initialPage = 2)
+    val pagerState = rememberPagerState(initialPage = 1)
 
     val pageNames = listOf("Month Recap", "Records")
-
+    Log.d("pagerState", pagerState.currentPage.toString())
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Rant Statistics",
-                        color = Color.LightGray
+                        buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = Color.White)) {
+                                append("Rant Statistics ")
+                            }
+                            if (settings.scrollNavigation) {
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = Color.LightGray,
+                                        fontSize = 15.sp,
+                                        fontStyle = FontStyle.Italic
+                                    ),
+                                ) {
+                                    append("/ ${pageNames[pagerState.currentPage]}")
+                                }
+                            }
+
+                        }
                     )
                 },
                 navigationIcon = {
@@ -161,8 +184,6 @@ fun StatisticView(
         },
 
         bottomBar = {
-
-
             if (settings.scrollNavigation) {
 
                 Row(
@@ -262,13 +283,22 @@ fun StatisticView(
                 ) { page ->
                     when (page) {
                         0 -> {
+//                            pageName.value = "Monthly Recap"
                             _Statistics_screens.update { it.copy(selectedScreen = Screen.Month_Recap) }
-                            monthlyRecapView()
+                            MonthlyRecap(
+                                rantViewModel,
+                                pads,
+                                openRantChat,
+                                settings.scrollNavigation
+                            )
+
                         }
 
                         1 -> {
+//                            pageName.value = "Records"
                             _Statistics_screens.update { it.copy(selectedScreen = Screen.Records) }
-                            recordsView(rantsArray, openRantChat, pads)
+
+                            recordsView(rantsArray, openRantChat, pads, settings.scrollNavigation)
                         }
                     }
                 }
@@ -283,12 +313,17 @@ fun StatisticView(
                 startDestination = Screen.Records.route
             ) {
                 composable(Screen.Month_Recap.route) {
+//                    pageName.value = "Monthly Recap"
                     _Statistics_screens.update { it.copy(selectedScreen = Screen.Month_Recap) }
-                    monthlyRecapView()
+//                    monthlyRecapView(rantViewModel, pads, openRantChat, settings.scrollNavigation)
+                    MonthlyRecap(rantViewModel, pads, openRantChat, settings.scrollNavigation)
+
                 }
                 composable(Screen.Records.route) {
+//                    pageName.value = "Records"
+
                     _Statistics_screens.update { it.copy(selectedScreen = Screen.Records) }
-                    recordsView(rantsArray, openRantChat, pads)
+                    recordsView(rantsArray, openRantChat, pads, settings.scrollNavigation)
 
                 }
 
@@ -298,16 +333,24 @@ fun StatisticView(
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun monthlyRecapView() {
-    Text(text = "monthlyRecapView")
+fun monthlyRecapView(
+    rantViewModel: RantViewModel,
+    innerPadding: PaddingValues,
+    openRantChat: (id: Int) -> Unit,
+    scrollNavigation: Boolean
+) {
+//    Text(text = "monthlyRecapView")
+    //moved it to a different file to reduce cluttering
 }
 
 @Composable
 fun recordsView(
     rantsArray: Array<Array<MutableState<out Any?>>>,
     openRantChat: (id: Int) -> Unit,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    scrollNavigation: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -516,7 +559,7 @@ fun createStatsText(rant: RantListTableModel, longest: Boolean) {
         Text(
             text = buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.White)) {
-                    append("With only")
+                    append("With only ")
                 }
                 withStyle(
                     style = SpanStyle(
@@ -552,7 +595,7 @@ fun createStatsText(rant: RantListTableModel, longest: Boolean) {
                     append(" shortest")
                 }
                 withStyle(style = SpanStyle(color = Color.White)) {
-                    append(" rant. Rant more!")
+                    append(" rant. Stop sleeping!")
                 }
             },
 //            modifier = Modifier.padding(8.dp)

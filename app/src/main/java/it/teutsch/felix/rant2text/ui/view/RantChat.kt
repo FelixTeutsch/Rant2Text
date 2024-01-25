@@ -301,7 +301,7 @@ fun messageOptions(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val infiniteTransition = rememberInfiniteTransition(label = "")
+            val infiniteTransition = rememberInfiniteTransition(label = "Transition")
             val size by infiniteTransition.animateValue(
                 initialValue = 56.dp,
                 targetValue = 42.dp,

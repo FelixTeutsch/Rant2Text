@@ -48,11 +48,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -445,6 +450,9 @@ fun RantFab(onClick: () -> Unit) {
 fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshClick: () -> Unit) {
     val state = rantViewModel.rantViewState.collectAsState()
 
+    var isTextFieldFocused by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -462,7 +470,10 @@ fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshCl
                 .padding(16.dp)
                 .weight(1f)
                 .clip(RoundedCornerShape(percent = 50)) // Fully rounded corners
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .onFocusChanged {
+                    isTextFieldFocused = it.isFocused
+                },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 textColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 backgroundColor = Color.Transparent,
@@ -472,13 +483,14 @@ fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshCl
             ),
             placeholder = {
                 Text(
-                    text = "Rant2Text",
+                    text = if (!isTextFieldFocused) "Rant2Text" else "Search...", // TODO: change to Search on focus,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center // Center align the text
+                    textAlign = if (!isTextFieldFocused) TextAlign.Center else TextAlign.Start // TODO: CENTER ON FOCUS
                 )
             },
+
             singleLine = true,
             readOnly = false,
             leadingIcon = {
@@ -493,7 +505,7 @@ fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshCl
                 )
             },
             trailingIcon = {
-                if (state.value.searchText.isNotEmpty())
+                if (isTextFieldFocused)
                     Icon(
                         Icons.Rounded.Clear,
                         contentDescription = "Clear Search",
@@ -501,16 +513,17 @@ fun RantTopBar(rantViewModel: RantViewModel, openDrawer: () -> Unit, onRefreshCl
                             .padding(horizontal = 32.dp, vertical = 0.dp)
                             .clickable {
                                 rantViewModel.updateSearchText("")
+                                focusManager.clearFocus()
                             },
                     )
                 else
                     Icon(
                         Icons.Rounded.Search,
-                        contentDescription = "Refresh",
+                        contentDescription = "Search",
                         modifier = Modifier
                             .padding(horizontal = 32.dp, vertical = 0.dp),
                     )
-            }
+            },
         )
     }
 }

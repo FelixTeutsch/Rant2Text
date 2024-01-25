@@ -3,7 +3,7 @@ package it.teutsch.felix.rant2text.ui.model
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.teutsch.felix.rant2text.data.dao.RantDao
-import it.teutsch.felix.rant2text.data.model.RantTableModel
+import it.teutsch.felix.rant2text.data.model.RantListTableModel
 import it.teutsch.felix.rant2text.ui.enumeration.EDialog
 import it.teutsch.felix.rant2text.ui.state.RantViewState
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
-    fun deleteRant(rant: RantTableModel) {
+    fun deleteRant(rant: RantListTableModel) {
         dismissDialog()
         viewModelScope.launch {
             dao.deleteRant(rant)
@@ -39,16 +39,16 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
      * else edit the given rant
      * @param rant: RantTableModel? = null
      */
-    fun openEditModal(rant: RantTableModel? = null) {
+    fun openEditModal(rant: RantListTableModel? = null) {
         _rantViewState.update {
             it.copy(
-                targetRant = rant ?: RantTableModel(),
+                targetRant = rant ?: RantListTableModel(),
                 dialog = if (rant == null) EDialog.CREATE_RANT else EDialog.EDIT_RANT
             )
         }
     }
 
-    suspend fun saveRant(rant: RantTableModel): Int {
+    suspend fun saveRant(rant: RantListTableModel): Int {
         return withContext(Dispatchers.IO) {
             dismissDialog()
             var newRantId = 0L
@@ -57,7 +57,7 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
-    fun updateRant(rant: RantTableModel) {
+    fun updateRant(rant: RantListTableModel) {
         dismissDialog()
         viewModelScope.launch {
             dao.updateRant(rant)
@@ -67,13 +67,13 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
     fun dismissDialog() {
         _rantViewState.update {
             it.copy(
-                targetRant = RantTableModel(),
+                targetRant = RantListTableModel(),
                 dialog = EDialog.NONE
             )
         }
     }
 
-    fun clickDeleteRant(rant: RantTableModel) {
+    fun clickDeleteRant(rant: RantListTableModel) {
         _rantViewState.update {
             it.copy(
                 targetRant = rant,
@@ -95,11 +95,11 @@ class RantViewModel(private val dao: RantDao) : ViewModel() {
         }
     }
 
-    fun getMostCharsRant(): Flow<RantTableModel> {
+    fun getMostCharsRant(): Flow<RantListTableModel> {
         return dao.getRantWithMostChars()
     }
 
-    fun getLeastCharsRant(): Flow<RantTableModel> {
+    fun getLeastCharsRant(): Flow<RantListTableModel> {
         return dao.getRantWithLeastChars()
     }
 

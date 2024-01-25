@@ -9,17 +9,17 @@ import androidx.room.PrimaryKey
     tableName = "texts",
     foreignKeys = [
         ForeignKey(
-            entity = RantTableModel::class,
+            entity = RantListTableModel::class,
             parentColumns = ["id"],
             childColumns = ["rantId"],
             onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class TextTableModel(
-    @PrimaryKey(autoGenerate = true)
-    val textId: Int = 0,
-    val rantId: Int,
+data class RantTextTableModel(
+    val rantId: Int = 0,
     var text: String = "",
     val date: Long = System.currentTimeMillis(),
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
 )

@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import it.teutsch.felix.rant2text.ui.enumeration.EAngerLevel
 
 @Entity(tableName = "rants")
-data class RantTableModel(
+data class RantListTableModel(
     //TODO: turn em back to vals after the chat page is settled
     var title: String = "",
     var text: String = "",

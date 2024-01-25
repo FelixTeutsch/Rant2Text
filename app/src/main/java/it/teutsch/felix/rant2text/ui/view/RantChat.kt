@@ -47,13 +47,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -77,10 +75,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
-import it.teutsch.felix.rant2text.data.model.RantTableModel
-import it.teutsch.felix.rant2text.data.model.TextTableModel
+import it.teutsch.felix.rant2text.data.model.RantListTableModel
+import it.teutsch.felix.rant2text.data.model.RantTextTableModel
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
 import it.teutsch.felix.rant2text.ui.voiceToText.VoicetoTextParser
 import java.text.SimpleDateFormat
@@ -106,6 +103,7 @@ fun RantChatView(
     Scaffold(
         topBar = {
             topBarSection(
+                rantChatModel,
                 title = state.rant.title,
                 closeChatIntent,
                 color = state.angerLevel.angerColor,
@@ -129,18 +127,20 @@ fun RantChatView(
         }
         // Not making use of bottom bar for style reasons
     )
+    EditRantMessageModal(rantChatModel)
+    DeleteRantTextModal(rantChatModel)
+    EditRantModalInner(rantChatModel, closeChat = closeChatIntent, settings = settings)
 }
 
 @Composable
 fun chatSection(
-    rant: RantTableModel,
+    rant: RantListTableModel,
     rantChatModel: RantChatModel,
-    texts: List<TextTableModel>,
+    texts: List<RantTextTableModel>,
     settings: SettingsData,
     innerPadding: PaddingValues,
 ) {
-    rantChatModel.getTextMsgs(rant.id)
-
+    rantChatModel.getRandMessages(rant.id)
     LazyColumn(
         modifier = Modifier
             .padding(innerPadding)
@@ -163,15 +163,14 @@ private val userChatBubble = RoundedCornerShape(10.dp, 10.dp, 0.dp, 10.dp)
 )
 @Composable
 fun messageItem(
-    text: TextTableModel,
+    text: RantTextTableModel,
     rantChatModel: RantChatModel,
     settings: SettingsData,
-    rant: RantTableModel
+    rant: RantListTableModel
 ) {
     val sdf = SimpleDateFormat("dd MMM yyyy 'at' HH:mm", Locale.getDefault())
     val formattedDate = sdf.format(Date(text.date))
     var isTimeVisible by remember { mutableStateOf(settings.showTimeStampsForMessages) }
-    var isDialogOpen by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf(TextFieldValue(text.text)) }
 
     Column(
@@ -183,7 +182,7 @@ fun messageItem(
                 onClick = { isTimeVisible = !isTimeVisible },
                 onLongClick = {
                     if (settings.editRantMessages) {
-                        isDialogOpen = true
+                        rantChatModel.clickEditRant(text)
                         editText = TextFieldValue(text.text)
                     }
                 }),
@@ -233,100 +232,12 @@ fun messageItem(
             }
         }
     }
-
-
-
-    Spacer(modifier = Modifier.height(15.dp))
-
-    if (isDialogOpen) {
-        Dialog(
-            onDismissRequest = {
-                isDialogOpen = false
-            },
-            content = {
-                ElevatedCard(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 8.dp
-                    ),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "Edit Message",
-                                style = MaterialTheme.typography.headlineMedium,
-                                modifier = Modifier.padding(bottom = 16.dp),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    rantChatModel.deleteTextMsg(rant, text)
-                                    isDialogOpen = false
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Delete,
-                                    contentDescription = "Delete Message",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-
-                        }
-
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-
-                            var messageText by remember { mutableStateOf(TextFieldValue(text.text)) }
-                            val oldText = text.text
-                            OutlinedTextField(
-                                value = messageText,
-                                onValueChange = { messageText = it },
-                                label = { Text("Message") },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    textColor = Color.White,
-                                    focusedBorderColor = Color.Yellow,
-                                    unfocusedBorderColor = Color.LightGray
-                                )
-                            )
-
-                            ModalButtons(
-                                confirmLabel = "Confirm",
-                                confirmColor = MaterialTheme.colorScheme.primaryContainer,
-                                onConfirmColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                cancelLabel = "Cancel",
-                                onConfirm = {
-                                    text.text = messageText.text
-                                    rantChatModel.updateTextMsg(rant, oldText, text)
-                                    isDialogOpen = false
-                                },
-                                onCancel = { isDialogOpen = false }
-                            )
-                        }
-                    }
-                }
-            }
-        )
-    }
 }
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun messageOptions(
-    rant: RantTableModel,
+    rant: RantListTableModel,
     rantChatModel: RantChatModel,
     voiceToTextParser: VoicetoTextParser
 ) {
@@ -449,8 +360,6 @@ fun messageOptions(
                                     else {
                                         rant.text = rantMessage
                                         saveTextMsg(rantChatModel, rant, rantMessage)
-                                        // Update rant for the last message
-                                        rantChatModel.saveRantMsg(rant)
                                         rantMessage = ""
                                     }
                                 },
@@ -465,7 +374,6 @@ fun messageOptions(
         if (voiceRecState.value.spokenText.isNotEmpty()) {
             rant.text = voiceRecState.value.spokenText
             saveTextMsg(rantChatModel, rant, voiceRecState.value.spokenText)
-            rantChatModel.saveRantMsg(rant)
         }
     }
 }
@@ -493,10 +401,10 @@ fun SimpleCircleShape2(
     }
 }
 
-fun saveTextMsg(rantChatModel: RantChatModel, rant: RantTableModel, text: String) {
-    rantChatModel.saveTextMsg(
+fun saveTextMsg(rantChatModel: RantChatModel, rant: RantListTableModel, text: String) {
+    rantChatModel.addRantMessage(
         rant,
-        TextTableModel(
+        RantTextTableModel(
             rantId = rant.id,
             text = text
         )
@@ -505,6 +413,7 @@ fun saveTextMsg(rantChatModel: RantChatModel, rant: RantTableModel, text: String
 
 @Composable
 fun topBarSection(
+    rantChatModel: RantChatModel,
     title: String,
     closeChatIntent: () -> Unit,
     color: Color,
@@ -571,7 +480,10 @@ fun topBarSection(
                         .background(color = Color.DarkGray)
                 ) {
                     DropdownMenuItem(
-                        onClick = { "TODO: add the functionality" },
+                        onClick = {
+                            rantChatModel.clickUpdateRant()
+                            expanded = false
+                        },
                         modifier = Modifier
                             .width(200.dp)
                     ) {

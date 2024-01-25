@@ -1,12 +1,12 @@
 package it.teutsch.felix.rant2text.ui.model
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.teutsch.felix.rant2text.data.dao.RantDao
 import it.teutsch.felix.rant2text.data.dao.TextDao
-import it.teutsch.felix.rant2text.data.model.RantTableModel
-import it.teutsch.felix.rant2text.data.model.TextTableModel
+import it.teutsch.felix.rant2text.data.model.RantListTableModel
+import it.teutsch.felix.rant2text.data.model.RantTextTableModel
+import it.teutsch.felix.rant2text.ui.enumeration.EDialog
 import it.teutsch.felix.rant2text.ui.state.RantChatState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +14,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) : ViewModel() {
-    private val _rantChatState = MutableStateFlow(RantChatState("", "", RantTableModel()))
+    private val _rantChatState = MutableStateFlow(
+        RantChatState(
+            "", "",
+            RantListTableModel()
+        )
+    )
     val rantChatState = _rantChatState.asStateFlow()
 
     fun getRantById(rantId: Int) {
@@ -36,17 +41,7 @@ class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) 
         }
     }
 
-    fun saveRantMsg(rantMsg: RantTableModel) {
-        //TODO: update the save to create e a new table instead of editing the passed rant
-        _rantChatState.update { it.copy(rant = rantMsg, text = "Test") }
-        Log.d("Personal", "${rantChatState.value.rant}")
-        viewModelScope.launch {
-            rantDao.updateRant(rantChatState.value.rant)
-        }
-    }
-
-
-    fun getTextMsgs(rantId: Int) {
+    fun getRandMessages(rantId: Int) {
         viewModelScope.launch {
             textDao.getTextsByRantId(rantId).collect { texts ->
                 if (texts != null) {
@@ -58,7 +53,7 @@ class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) 
         }
     }
 
-    fun saveTextMsg(rant: RantTableModel, text: TextTableModel) {
+    fun addRantMessage(rant: RantListTableModel, text: RantTextTableModel) {
         viewModelScope.launch {
             // Update the wordCount and charCount of the rant object
             rant.wordCount += text.text.split("\\s+".toRegex()).size
@@ -68,25 +63,40 @@ class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) 
             // Save the message
             textDao.insertText(text)
         }
-    }
 
-    fun updateTextMsg(rant: RantTableModel, oldText: String, newText: TextTableModel) {
+        _rantChatState.update { it.copy(rant = rant, text = "") }
         viewModelScope.launch {
-            // Update the wordCount and charCount of the rant object
-            rant.wordCount -= oldText.split("\\s+".toRegex()).size
-            rant.charCount -= oldText.length
-            rant.wordCount += newText.text.split("\\s+".toRegex()).size
-            rant.charCount += newText.text.length
-
-            rant.text = newText.text
-            rantDao.updateRant(rant)
-
-
-            textDao.updateText(newText)
+            rantDao.updateRant(rantChatState.value.rant)
         }
     }
 
-    fun deleteTextMsg(rant: RantTableModel, text: TextTableModel) {
+    fun updateRantMessage(
+        rantTextTableModel: RantTextTableModel,
+        oldMessage: String = ""
+    ) {
+        val rant = _rantChatState.value.rant
+        viewModelScope.launch {
+            // Update Rant
+            // Update the wordCount and charCount of the rant object
+            rant.charCount -= oldMessage.split("\\s+".toRegex()).size
+            rant.charCount -= oldMessage.length
+            rant.wordCount += rantTextTableModel.text.split("\\s+".toRegex()).size
+            rant.charCount += rantTextTableModel.text.length
+
+            // Update last message (if needed)
+            if (oldMessage.lowercase() == rant.text.lowercase())
+                rant.text = rantTextTableModel.text
+            rantDao.updateRant(rant)
+
+            // Update message
+            textDao.updateText(rantTextTableModel)
+        }
+        dismissDialog()
+    }
+
+    fun deleteRantMessage(rant: RantListTableModel, text: RantTextTableModel) {
+        // TODO: check if deleted message is the newest one. If so replace the message in rant with the second newest or simply with "Latest message was deleted"
+
         viewModelScope.launch {
             // Update the wordCount and charCount of the rant object
             rant.wordCount -= text.text.split("\\s+".toRegex()).size
@@ -95,7 +105,7 @@ class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) 
 
             val lastTwoMessages = textDao.getLastTwoMessagesByRantId(rant.id)
 
-            if (lastTwoMessages?.firstOrNull()?.textId == text.textId) {
+            if (lastTwoMessages?.firstOrNull()?.id == text.id) {
                 rant.text = lastTwoMessages.getOrNull(1)?.text ?: ""
             }
             rantDao.updateRant(rant)
@@ -103,7 +113,62 @@ class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) 
             // Delete the message
             textDao.deleteText(text)
         }
+        dismissDialog()
     }
 
+    fun dismissDialog() {
+        _rantChatState.update {
+            it.copy(
+                targetMessage = RantTextTableModel(),
+                dialog = EDialog.NONE
+            )
+        }
+    }
 
+    fun clickDeleteRantMessage() {
+        _rantChatState.update {
+            it.copy(
+                dialog = EDialog.DELETE_TEXT
+            )
+        }
+    }
+
+    fun clickEditRant(text: RantTextTableModel) {
+        _rantChatState.update {
+            it.copy(
+                targetMessage = text,
+                dialog = EDialog.EDIT_TEXT
+            )
+        }
+    }
+
+    fun clickDeleteRant() {
+        _rantChatState.update {
+            it.copy(
+                dialog = EDialog.DELETE_RANT
+            )
+        }
+    }
+
+    fun deleteRant(rant: RantListTableModel) {
+        viewModelScope.launch {
+            rantDao.deleteRant(rant)
+        }
+        dismissDialog()
+    }
+
+    fun updateRant(rantListTableModel: RantListTableModel) {
+        viewModelScope.launch {
+            rantDao.updateRant(rantListTableModel)
+        }
+        dismissDialog()
+    }
+
+    fun clickUpdateRant() {
+        _rantChatState.update {
+            it.copy(
+                dialog = EDialog.EDIT_RANT
+            )
+        }
+    }
 }

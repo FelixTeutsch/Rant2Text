@@ -56,6 +56,7 @@ android {
 
 dependencies {
 
+
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -99,4 +100,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
 
     implementation("com.google.firebase:firebase-messaging")
+
+    //pagerIndicator
+    implementation("com.google.accompanist:accompanist-pager:0.20.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.20.0")
 }

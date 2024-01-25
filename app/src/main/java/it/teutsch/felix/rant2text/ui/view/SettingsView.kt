@@ -151,6 +151,22 @@ fun SettingsContent(
                     }
                 )
             }
+
+            SettingsGroup(title = "Statistics") {
+                SettingsItemSwitch(
+                    title = "Page scroll navigation",
+                    description = "navigate through pages by scrolling left/right",
+                    checked = settings.scrollNavigation,
+                    onSwitchChange = {
+                        scope.launch {
+                            dataStore.updateData { currentSettings ->
+                                currentSettings.copy(scrollNavigation = it)
+                            }
+                        }
+                    }
+                )
+
+            }
             SettingsGroup(title = "Extra") {
                 SettingsItemFirebaseID(context = LocalContext.current)
 

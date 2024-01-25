@@ -10,5 +10,6 @@ data class SettingsData(
     val confirmBeforeDelete: Boolean = true,
     val defaultAngerLevel: EAngerLevel = EAngerLevel.None,
     val showTimeStampsForMessages: Boolean = false,
+    val scrollNavigation: Boolean = true,
     // TODO: add more settings
 )

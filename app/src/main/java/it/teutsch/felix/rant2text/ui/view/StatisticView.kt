@@ -1,14 +1,17 @@
 package it.teutsch.felix.rant2text.ui.view
 
 import android.annotation.SuppressLint
-import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,7 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -54,14 +56,34 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.google.accompanist.pager.rememberPagerState
 import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
+import it.teutsch.felix.rant2text.ui.state.Statistics_screens
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+
+
+sealed class Screen(val route: String) {
+    object Week_Summary : Screen("week_Summary")
+    object Month_Recap : Screen("month_Recap")
+    object Records : Screen("records")
+}
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalPagerApi::class
+)
 @Composable
 fun StatisticView(
     rantViewModel: RantViewModel,
@@ -69,8 +91,11 @@ fun StatisticView(
     openDrawer: () -> Unit,
     openRantChat: (id: Int) -> Unit
 ) {
+    val _Statistics_screens = MutableStateFlow(Statistics_screens())
 
-    val selectedButtonIndex = remember { mutableIntStateOf(0) }
+    val navController = rememberNavController()
+
+    val selectedButtonIndex = remember { mutableIntStateOf(1) }
 
     val rantsArray = remember {
         arrayOf(
@@ -104,7 +129,9 @@ fun StatisticView(
             }
         }
     }
+    val pagerState = rememberPagerState(initialPage = 2)
 
+    val pageNames = listOf("Month Recap", "Records")
 
     Scaffold(
         topBar = {
@@ -132,94 +159,184 @@ fun StatisticView(
                 ),
             )
         },
+
         bottomBar = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+
+
+            if (settings.scrollNavigation) {
+
+                Row(
                     modifier = Modifier
-                        .clickable {
-                            selectedButtonIndex.value = 0
-//                    onMonthRecapClicked()
-                        }
-                        .background(
-                            color = if (selectedButtonIndex.value == 0) Color.Blue else Color.Transparent,
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .padding(10.dp)
+                        .fillMaxWidth(),
+//                        .height(50.dp),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = "Month Recap",
-                        tint = Color.White
-                    )
-                    Text(
-                        text = "Month Recap",
-                        color = Color.White
+                    HorizontalPagerIndicator(
+                        pagerState = pagerState,
+                        modifier = Modifier
+//                            .background(Color.LightGray)
+                            .align(Alignment.CenterVertically),
+//                            .fillMaxHeight(),
+//                            .width(100.dp),
+                        activeColor = Color(0xFF755C00),
+                        inactiveColor = Color.Gray.copy(0.5f),
+                        indicatorWidth = 12.dp,
+                        indicatorHeight = 12.dp,
+                        spacing = 5.dp
                     )
                 }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+            } else {
+                Row(
                     modifier = Modifier
-                        .clickable {
-                            selectedButtonIndex.value = 1
-//                    onRecordsClicked()
-                        }
-                        .background(
-                            color = if (selectedButtonIndex.value == 1) Color.Blue else Color.Transparent,
-                            shape = RoundedCornerShape(30.dp)
-                        )
-                        .padding(10.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Image, // replace with your shape icon
-                        contentDescription = "Records",
-                        tint = Color.White
-                    )
-                    Text(
-                        text = "Records",
-                        color = Color.White
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable {
+                                selectedButtonIndex.value = 0
+                                navController.navigate(Screen.Month_Recap.route)
+                            }
+                            .background(
+                                color = if (selectedButtonIndex.value == 0) Color(0x80755C00) else Color.Transparent,
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .padding(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Month Recap",
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "Month Recap",
+                            color = Color.White
+                        )
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable {
+                                selectedButtonIndex.value = 1
+                                navController.navigate(Screen.Records.route)
+
+//                    onRecordsClicked()
+                            }
+                            .indication(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            )
+                            .background(
+                                color = if (selectedButtonIndex.value == 1) Color(0x80755C00) else Color.Transparent,
+                                shape = RoundedCornerShape(30.dp)
+                            )
+                            .padding(10.dp)
+                    ) {
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_format_list_bulleted_24),
+                            contentDescription = "Records",
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "Records",
+                            color = Color.White
+                        )
+                    }
                 }
             }
-        }
-    ) {
 
-        Column(
-            modifier = Modifier
-                .padding(it)
-                .padding(vertical = 16.dp, horizontal = 25.dp)
-        ) {
-            LazyColumn {
-                items(2) { it ->
-                    if (rantsArray[it][0].value != null) {
-                        CardWithImageAndText(
-                            rantsArray[it][0].value as RantTableModel?,
-                            rantsArray[it][1].value as Boolean,
-                            openRantChat
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+        }
+
+    ) { pads ->
+
+
+        if (settings.scrollNavigation) {
+            Column {
+                HorizontalPager(
+                    state = pagerState,
+                    count = 2,
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                ) { page ->
+                    when (page) {
+                        0 -> {
+                            _Statistics_screens.update { it.copy(selectedScreen = Screen.Month_Recap) }
+                            monthlyRecapView()
+                        }
+
+                        1 -> {
+                            _Statistics_screens.update { it.copy(selectedScreen = Screen.Records) }
+                            recordsView(rantsArray, openRantChat, pads)
+                        }
                     }
+                }
+            }
+        } else {
+
+            NavHost(
+                navController = navController,
+                modifier = Modifier
+                    .padding(top = 20.dp),
+
+                startDestination = Screen.Records.route
+            ) {
+                composable(Screen.Month_Recap.route) {
+                    _Statistics_screens.update { it.copy(selectedScreen = Screen.Month_Recap) }
+                    monthlyRecapView()
+                }
+                composable(Screen.Records.route) {
+                    _Statistics_screens.update { it.copy(selectedScreen = Screen.Records) }
+                    recordsView(rantsArray, openRantChat, pads)
+
+                }
+
+            }
+        }
+    }
+}
+
+
+@Composable
+fun monthlyRecapView() {
+    Text(text = "monthlyRecapView")
+}
+
+@Composable
+fun recordsView(
+    rantsArray: Array<Array<MutableState<out Any?>>>,
+    openRantChat: (id: Int) -> Unit,
+    innerPadding: PaddingValues
+) {
+    Column(
+        modifier = Modifier
+            .padding(innerPadding)
+            .padding(horizontal = 25.dp)
+    ) {
+        LazyColumn {
+            items(2) { it ->
+                if (rantsArray[it][0].value != null) {
+                    CardWithImageAndText(
+                        rantsArray[it][0].value as RantTableModel?,
+                        rantsArray[it][1].value as Boolean,
+                        openRantChat
+                    )
+                    Spacer(modifier = Modifier.height(25.dp))
                 }
             }
         }
     }
 }
 
-@Composable
-fun onMonthRecapClicked() {
-}
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun onRecordsClicked() {
-}
-
-
-@Composable
-fun CardWithImageAndText(rant: RantTableModel?, longest: Boolean, openRantChat: (id: Int) -> Unit) {
-    Log.d("CardWithImageAndText", "rant: $rant")
+fun CardWithImageAndText(
+    rant: RantTableModel?,
+    longest: Boolean,
+    openRantChat: (id: Int) -> Unit
+) {
 
     Card(
         modifier = Modifier
@@ -309,6 +426,7 @@ fun CardWithImageAndText(rant: RantTableModel?, longest: Boolean, openRantChat: 
         }
     }
 }
+
 
 @Composable
 fun createImage(longest: Boolean) {

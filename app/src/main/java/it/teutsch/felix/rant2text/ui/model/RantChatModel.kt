@@ -37,8 +37,8 @@ class RantChatModel(private val rantDao: RantDao, private val textDao: TextDao) 
     }
 
     fun saveRantMsg(rantMsg: RantTableModel) {
-        //TODO: update the save to creta e a new table instead of editing the passed rant
-        _rantChatState.update { it.copy(rant = rantMsg) }
+        //TODO: update the save to create e a new table instead of editing the passed rant
+        _rantChatState.update { it.copy(rant = rantMsg, text = "Test") }
         Log.d("Personal", "${rantChatState.value.rant}")
         viewModelScope.launch {
             rantDao.updateRant(rantChatState.value.rant)

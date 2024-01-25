@@ -5,8 +5,8 @@ import it.teutsch.felix.rant2text.data.model.TextTableModel
 import it.teutsch.felix.rant2text.ui.enumeration.EAngerLevel
 
 data class RantChatState(
-    val title: String = "Generic",
-    val text: String = "Generic Text",
+    val title: String = "",
+    var text: String = "",
     val rant: RantTableModel = RantTableModel(),
     val angerLevel: EAngerLevel = EAngerLevel.None,
     val texts: List<TextTableModel> = emptyList()

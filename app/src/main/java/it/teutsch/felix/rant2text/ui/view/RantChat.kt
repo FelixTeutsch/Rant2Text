@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -58,7 +59,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,7 +82,6 @@ import it.teutsch.felix.rant2text.data.dataStore.SettingsData
 import it.teutsch.felix.rant2text.data.model.RantTableModel
 import it.teutsch.felix.rant2text.data.model.TextTableModel
 import it.teutsch.felix.rant2text.ui.model.RantChatModel
-import it.teutsch.felix.rant2text.ui.state.VoiceToTextParserState
 import it.teutsch.felix.rant2text.ui.voiceToText.VoicetoTextParser
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -331,167 +330,142 @@ fun messageOptions(
     rantChatModel: RantChatModel,
     voiceToTextParser: VoicetoTextParser
 ) {
+    val state = rantChatModel.rantChatState.collectAsState()
+
     val voiceRecState = voiceToTextParser.state.collectAsState()
 
-    var typedMsg by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue("")
-        )
-    }
+    var rantMessage by rememberSaveable { mutableStateOf(state.value.text) }
 
 
     // Define the icon to display based on the state of the text field
     val iconDisplay: ImageVector =
-        if (typedMsg.text.isEmpty())
+        if (rantMessage.isEmpty())
             if (!voiceRecState.value.isSpeaking)
                 Icons.Rounded.Mic
             else
-                Icons.Rounded.Send // TODO: add animation to icon!
+                Icons.Rounded.Stop
         else
             Icons.Rounded.Send
 
-
-
-
-
-    OutlinedTextField(
-        placeholder = { Text(text = "Start Ranting...", textAlign = TextAlign.Center) },
-        value = typedMsg,
-        readOnly = voiceRecState.value.isSpeaking,
-        onValueChange = {
-            typedMsg = it
-        },
-        maxLines = 4,
+    Row(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(25.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.SpaceBetween
+
+    ) {
+
+        OutlinedTextField(
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                backgroundColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
             ),
-        trailingIcon = {
-
-            PulsatingCircles(
-                iconDisplay = iconDisplay,
-                typedMsg = typedMsg,
-                rantChatModel = rantChatModel,
-                rant = rant,
-                voiceToTextParser = voiceToTextParser,
-                voiceRecState = voiceRecState
+            placeholder = { Text(text = "Start Ranting...", textAlign = TextAlign.Center) },
+            value = rantMessage,
+            readOnly = voiceRecState.value.isSpeaking,
+            onValueChange = {
+                rantMessage = it
+            },
+            maxLines = 4,
+            modifier = Modifier
+                .padding(4.dp)
+                .weight(1f)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(25.dp)
+                ),
+        )
+        // ICON TO SEND & Recordd
+        Column(
+            modifier = Modifier
+                .padding(4.dp)
+                .height(56.dp)
+                .width(56.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val infiniteTransition = rememberInfiniteTransition(label = "")
+            val size by infiniteTransition.animateValue(
+                initialValue = 56.dp,
+                targetValue = 42.dp,
+                Dp.VectorConverter,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = FastOutLinearInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ), label = "Animation for the mic icon"
             )
-
-            Icon(
-                imageVector = iconDisplay,
-                contentDescription = "Send message button",
+            val smallCircle by infiniteTransition.animateValue(
+                initialValue = 28.dp,
+                targetValue = 42.dp,
+                Dp.VectorConverter,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = FastOutLinearInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ), label = "Animation for the mic icon"
+            )
+            Box(
                 modifier = Modifier
-                    .clickable {
-                        // Change of mic icon to send icon and back
-                        if (typedMsg.text.isEmpty())
-                            if (voiceRecState.value.isSpeaking)
-                                voiceToTextParser.stopListening()
-                            else
-                                voiceToTextParser.startListening()
-                        else {
-                            rant.text = typedMsg.text
-                            saveTextMsg(rantChatModel, rant, typedMsg.text)
-                            rantChatModel.saveRantMsg(rant)
-                            typedMsg = TextFieldValue("")
-                        }
+                    .height(56.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (voiceRecState.value.isSpeaking) {
+                    SimpleCircleShape2(
+                        size = size,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                    )
+                    SimpleCircleShape2(
+                        size = smallCircle,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                    )
+                    SimpleCircleShape2(
+                        size = 28.dp,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .height(56.dp)
+                        .width(56.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = iconDisplay,
+                            contentDescription = "Send message button",
+                            modifier = Modifier
+                                .clickable {
+                                    // Change of mic icon to send icon and back
+                                    if (rantMessage.isEmpty())
+                                        if (voiceRecState.value.isSpeaking)
+                                            voiceToTextParser.stopListening()
+                                        else
+                                            voiceToTextParser.startListening()
+                                    else {
+                                        rant.text = rantMessage
+                                        saveTextMsg(rantChatModel, rant, rantMessage)
+                                        // Update rant for the last message
+                                        rantChatModel.saveRantMsg(rant)
+                                        rantMessage = ""
+                                    }
+                                },
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
-            )
-        },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = MaterialTheme.colorScheme.onPrimary,
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            backgroundColor = Color.Transparent,
-            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            placeholderColor = MaterialTheme.colorScheme.onPrimary,
-            trailingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ),
-    )
-
+                }
+            }
+        }
+    }
     LaunchedEffect(voiceRecState.value.spokenText) {
         if (voiceRecState.value.spokenText.isNotEmpty()) {
             rant.text = voiceRecState.value.spokenText
             saveTextMsg(rantChatModel, rant, voiceRecState.value.spokenText)
             rantChatModel.saveRantMsg(rant)
-        }
-    }
-}
-
-// TODO: fix this animation
-@Composable
-fun PulsatingCircles(
-    iconDisplay: ImageVector,
-    typedMsg: TextFieldValue,
-    rantChatModel: RantChatModel,
-    rant: RantTableModel,
-    voiceToTextParser: VoicetoTextParser,
-    voiceRecState: State<VoiceToTextParserState>,
-) {
-    Column {
-        val infiniteTransition = rememberInfiniteTransition()
-        val size by infiniteTransition.animateValue(
-            initialValue = 200.dp,
-            targetValue = 190.dp,
-            Dp.VectorConverter,
-            animationSpec = infiniteRepeatable(
-                animation = tween(500, easing = FastOutLinearInEasing),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-        val smallCircle by infiniteTransition.animateValue(
-            initialValue = 150.dp,
-            targetValue = 160.dp,
-            Dp.VectorConverter,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1000, easing = FastOutLinearInEasing),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            SimpleCircleShape2(
-                size = size,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-            )
-            SimpleCircleShape2(
-                size = smallCircle,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-            )
-            SimpleCircleShape2(
-                size = 130.dp,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = iconDisplay,
-                        contentDescription = "Send message button",
-                        modifier = Modifier
-                            .clickable {
-                                // Change of mic icon to send icon and back
-                                if (typedMsg.text.isEmpty())
-                                    if (voiceRecState.value.isSpeaking)
-                                        voiceToTextParser.stopListening()
-                                    else
-                                        voiceToTextParser.startListening()
-                                else {
-                                    rant.text = typedMsg.text
-                                    saveTextMsg(rantChatModel, rant, typedMsg.text)
-                                    rantChatModel.saveRantMsg(rant)
-                                    // TODDO: fix this!
-                                    //typedMsg = TextFieldValue("")
-                                }
-                            }
-                    )
-                }
-            }
         }
     }
 }

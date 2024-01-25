@@ -7,7 +7,9 @@ import kotlinx.serialization.Serializable
 data class SettingsData(
     val openRantOnCreate: Boolean = true,
     val openRantOnEdit: Boolean = false,
-    val confirmBeforeDelete: Boolean = true,
+    val editRantMessages: Boolean = true,
+    val confirmBeforeDeleteRantList: Boolean = true,
+    val confirmBeforeDeleteRantMessage: Boolean = true,
     val defaultAngerLevel: EAngerLevel = EAngerLevel.None,
     val showTimeStampsForMessages: Boolean = false,
     val scrollNavigation: Boolean = true,

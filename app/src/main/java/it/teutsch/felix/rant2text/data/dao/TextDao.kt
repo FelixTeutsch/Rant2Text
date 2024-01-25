@@ -6,24 +6,24 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import it.teutsch.felix.rant2text.data.model.TextTableModel
+import it.teutsch.felix.rant2text.data.model.RantTextTableModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TextDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertText(text: TextTableModel): Long
+    suspend fun insertText(text: RantTextTableModel): Long
 
     @Update
-    suspend fun updateText(text: TextTableModel)
+    suspend fun updateText(text: RantTextTableModel)
 
     @Delete
-    suspend fun deleteText(text: TextTableModel)
+    suspend fun deleteText(text: RantTextTableModel)
 
-    @Query("SELECT * FROM texts WHERE rantId = :rantId ORDER BY textId DESC")
-    fun getTextsByRantId(rantId: Int): Flow<List<TextTableModel>>
+    @Query("SELECT * FROM texts WHERE rantId = :rantId ORDER BY id DESC")
+    fun getTextsByRantId(rantId: Int): Flow<List<RantTextTableModel>>
 
-    @Query("SELECT * FROM texts WHERE rantId = :rantId ORDER BY textId DESC LIMIT 2")
-    suspend fun getLastTwoMessagesByRantId(rantId: Int): List<TextTableModel>?
+    @Query("SELECT * FROM texts WHERE rantId = :rantId ORDER BY id DESC LIMIT 2")
+    suspend fun getLastTwoMessagesByRantId(rantId: Int): List<RantTextTableModel>?
 }

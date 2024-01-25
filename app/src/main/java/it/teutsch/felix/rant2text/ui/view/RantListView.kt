@@ -61,7 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
-import it.teutsch.felix.rant2text.data.model.RantTableModel
+import it.teutsch.felix.rant2text.data.model.RantListTableModel
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -287,7 +287,11 @@ private fun isSameYear(today: Calendar, checkDate: Calendar): Boolean =
     ExperimentalFoundationApi::class
 )
 @Composable
-fun RantCard(rant: RantTableModel, rantViewModel: RantViewModel, openRantChat: (id: Int) -> Unit) {
+fun RantCard(
+    rant: RantListTableModel,
+    rantViewModel: RantViewModel,
+    openRantChat: (id: Int) -> Unit
+) {
     val dismissState = rememberDismissState(
         confirmStateChange = {
             when (it) {

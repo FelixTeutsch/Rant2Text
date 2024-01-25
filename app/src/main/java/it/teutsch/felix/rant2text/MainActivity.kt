@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
     private val db by lazy {
         Room.databaseBuilder(this, RantDatabase::class.java, "RantDatabase.db")
             // TODO: remove once database changes and nothing works anymore
-            //.fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration()
             .build()
     }
 

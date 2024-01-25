@@ -17,6 +17,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.rant2text"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/logo_icon" />
+
         <activity
             android:name=".AboutActivity"
             android:exported="false"
@@ -42,7 +46,8 @@
             android:name=".RantActivity"
             android:exported="false"
             android:label="@string/title_activity_rant"
-            android:theme="@style/Theme.rant2text" />
+            android:theme="@style/Theme.rant2text"
+            android:windowSoftInputMode="adjustResize" />
 
         <service
             android:name=".pushNotifications.PushNotificationService"

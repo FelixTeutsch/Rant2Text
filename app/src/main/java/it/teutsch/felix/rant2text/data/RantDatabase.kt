@@ -4,10 +4,10 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import it.teutsch.felix.rant2text.data.dao.RantDao
 import it.teutsch.felix.rant2text.data.dao.TextDao
-import it.teutsch.felix.rant2text.data.model.RantTableModel
-import it.teutsch.felix.rant2text.data.model.TextTableModel
+import it.teutsch.felix.rant2text.data.model.RantListTableModel
+import it.teutsch.felix.rant2text.data.model.RantTextTableModel
 
-@Database(entities = [RantTableModel::class, TextTableModel::class], version = 2)
+@Database(entities = [RantListTableModel::class, RantTextTableModel::class], version = 2)
 abstract class RantDatabase : RoomDatabase() {
     abstract val rantDao: RantDao
     abstract val textDao: TextDao

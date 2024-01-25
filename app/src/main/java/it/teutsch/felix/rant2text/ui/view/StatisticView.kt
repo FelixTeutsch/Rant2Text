@@ -65,7 +65,7 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import it.teutsch.felix.rant2text.R
 import it.teutsch.felix.rant2text.data.dataStore.SettingsData
-import it.teutsch.felix.rant2text.data.model.RantTableModel
+import it.teutsch.felix.rant2text.data.model.RantListTableModel
 import it.teutsch.felix.rant2text.ui.model.RantViewModel
 import it.teutsch.felix.rant2text.ui.state.Statistics_screens
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -100,11 +100,11 @@ fun StatisticView(
     val rantsArray = remember {
         arrayOf(
             arrayOf(
-                mutableStateOf<RantTableModel?>(null),
+                mutableStateOf<RantListTableModel?>(null),
                 mutableStateOf<Boolean>(false)
             ), // mostCharsRant
             arrayOf(
-                mutableStateOf<RantTableModel?>(null),
+                mutableStateOf<RantListTableModel?>(null),
                 mutableStateOf<Boolean>(false)
             )  // leastCharsRant
         )
@@ -113,7 +113,7 @@ fun StatisticView(
     LaunchedEffect(rantViewModel) {
         rantViewModel.getMostCharsRant().collect { rant ->
             if (rant != null) {
-                (rantsArray[0][0] as MutableState<RantTableModel?>).value =
+                (rantsArray[0][0] as MutableState<RantListTableModel?>).value =
                     rant // Update mostCharsRant
                 (rantsArray[0][1] as MutableState<Boolean>).value = true // Update boolean
             }
@@ -123,7 +123,7 @@ fun StatisticView(
     LaunchedEffect(rantViewModel) {
         rantViewModel.getLeastCharsRant().collect { rant ->
             if (rant != null) {
-                (rantsArray[1][0] as MutableState<RantTableModel?>).value =
+                (rantsArray[1][0] as MutableState<RantListTableModel?>).value =
                     rant // Update leastCharsRant
                 (rantsArray[1][1] as MutableState<Boolean>).value = false // Update boolean
             }
@@ -318,7 +318,7 @@ fun recordsView(
             items(2) { it ->
                 if (rantsArray[it][0].value != null) {
                     CardWithImageAndText(
-                        rantsArray[it][0].value as RantTableModel?,
+                        rantsArray[it][0].value as RantListTableModel?,
                         rantsArray[it][1].value as Boolean,
                         openRantChat
                     )
@@ -333,7 +333,7 @@ fun recordsView(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CardWithImageAndText(
-    rant: RantTableModel?,
+    rant: RantListTableModel?,
     longest: Boolean,
     openRantChat: (id: Int) -> Unit
 ) {
@@ -465,7 +465,7 @@ fun createHeaderText(longest: Boolean) {
 }
 
 @Composable
-fun createStatsText(rant: RantTableModel, longest: Boolean) {
+fun createStatsText(rant: RantListTableModel, longest: Boolean) {
     val fontSize = 18.sp
     if (longest) {
         Text(
